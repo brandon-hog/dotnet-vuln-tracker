@@ -2,6 +2,7 @@ using Application.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,9 +31,17 @@ builder.Services.AddHostedService<Api.Workers.CveSyncWorker>();
 // Register Repository (AddScoped = one instance per HTTP request)
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 
+// Add the swagger ui
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+});
+
 var app = builder.Build();
 
 app.UseAuthorization();
 app.MapControllers();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.Run();
