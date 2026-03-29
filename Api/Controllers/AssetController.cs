@@ -1,10 +1,12 @@
 using Application.Assets.Commands;
 using Application.Assets.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class AssetsController(IMediator mediator) : ControllerBase

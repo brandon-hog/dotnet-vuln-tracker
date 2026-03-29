@@ -2,7 +2,7 @@ using Application.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,17 +31,30 @@ builder.Services.AddHostedService<Api.Workers.CveSyncWorker>();
 // Register Repository (AddScoped = one instance per HTTP request)
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
 
+// Add endpoint explorer to discover minimal apis (identity core)
+builder.Services.AddEndpointsApiExplorer();
+
 // Add the swagger ui
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-});
+builder.Services.AddSwaggerGen();
+
+// Add Identity services and configure it to EF Core database
+builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+    .AddEntityFrameworkStores<AppDbContext>();
+
+builder.Services.AddAuthorization();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
-app.UseAuthorization();
-app.MapControllers();
+// Middleware definition
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.MapIdentityApi<IdentityUser>();
 
 app.Run();
