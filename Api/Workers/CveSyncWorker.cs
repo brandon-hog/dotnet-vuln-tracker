@@ -6,11 +6,11 @@ using Domain.Enums;
 
 namespace Api.Workers;
 
-/**
- Grabs the first 10 vulnerabilties, and checks if any of the assets
- have a matching keyword in the CVE description from their hostname.
- If so, it assigns the asset to the vulnerability.
-*/
+/// <summary>
+///  Grabs the first 10 vulnerabilties, and checks if any of the assets
+///  have a matching keyword in the CVE description from their hostname.
+///  If so, it assigns the asset to the vulnerability. 
+/// </summary>
 public class CveSyncWorker(IServiceScopeFactory scopeFactory, ILogger<CveSyncWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
