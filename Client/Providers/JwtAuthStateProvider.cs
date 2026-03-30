@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
 using Client.Services;
 
@@ -13,48 +12,33 @@ public class JwtAuthStateProvider(LocalStorageService localStorage) : Authentica
 
         if (string.IsNullOrWhiteSpace(token))
         {
+            // No token = Not Logged In
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
 
-        var claims = ParseClaimsFromJwt(token);
-        var identity = new ClaimsIdentity(claims, "jwt");
-        var user = new ClaimsPrincipal(identity);
-
-        return new AuthenticationState(user);
+        // Token exists. Create a generic authenticated state.
+        var identity = new ClaimsIdentity(
+            new[] { new Claim(ClaimTypes.Name, "Authenticated User") }, 
+            "OpaqueBearer" // The authentication type must have a value to register as logged in
+        );
+            
+        return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 
-    public void NotifyUserLoggedIn(string token)
+    public void NotifyUserLoggedIn()
     {
-        var claims = ParseClaimsFromJwt(token);
-        var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
-        var authState = Task.FromResult(new AuthenticationState(authenticatedUser));
-
+        var identity = new ClaimsIdentity(
+            new[] { new Claim(ClaimTypes.Name, "Authenticated User") }, 
+            "OpaqueBearer"
+        );
+            
+        var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity)));
         NotifyAuthenticationStateChanged(authState);
     }
 
     public void NotifyUserLogout()
     {
-        var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity());
-        var authState = Task.FromResult(new AuthenticationState(anonymousUser));
+        var authState = Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
         NotifyAuthenticationStateChanged(authState);
-    }
-
-    private static IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
-    {
-        var payload = jwt.Split('.')[1];
-        var jsonBytes = ParseBase64WithoutPadding(payload);
-        var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
-        
-        return keyValuePairs?.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString() ?? "")) ?? [];
-    }
-
-    private static byte[] ParseBase64WithoutPadding(string base64)
-    {
-        switch (base64.Length % 4)
-        {
-            case 2: base64 += "=="; break;
-            case 3: base64 += "="; break;
-        }
-        return Convert.FromBase64String(base64);
     }
 }

@@ -15,7 +15,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowBlazorClient", policy =>
     {
         // Blazor WASM local port
-        policy.WithOrigins("https://localhost:5199") 
+        policy.WithOrigins("http://localhost:5199") 
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -63,7 +63,7 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 // Add in cors
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection(); Include in production, in dev we have no SSL/TLS cert
 app.UseCors("AllowBlazorClient");
 
 app.UseAuthentication();

@@ -3,7 +3,7 @@
 @using Client.Services
 @using Client.Providers
 @using Microsoft.AspNetCore.Components.Authorization
-@inject HttpClient Http
+@inject HttpClient APIClient
 @inject LocalStorageService LocalStorage
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
@@ -46,7 +46,7 @@
         errorMessage = null;
 
         // Post to the Minimal API Identity endpoint
-        var response = await Http.PostAsJsonAsync("login", loginModel);
+        var response = await APIClient.PostAsJsonAsync("login", loginModel);
 
         if (response.IsSuccessStatusCode)
         {
@@ -57,7 +57,7 @@
                 await LocalStorage.SetItemAsync("accessToken", result.AccessToken);
                 
                 // Trigger Blazor to re-evaluate the <AuthorizeView> components
-                ((JwtAuthStateProvider)AuthStateProvider).NotifyUserLoggedIn(result.AccessToken);
+                ((JwtAuthStateProvider)AuthStateProvider).NotifyUserLoggedIn();
                 
                 Navigation.NavigateTo("/");
             }
