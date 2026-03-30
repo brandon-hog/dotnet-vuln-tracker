@@ -12,20 +12,20 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped<LocalStorageService>();
 
-builder.Services.AddTransient<JwtAuthorizationHandler>();
+builder.Services.AddTransient<TokenAuthHandler>();
 builder.Services.AddAuthorizationCore();
-builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider, OpaqueTokenAuthStateProvider>();
 
 builder.Services.AddScoped(sp => 
 {
     // Resolve custom JWT handler from the DI container
-    var jwtHandler = sp.GetRequiredService<JwtAuthorizationHandler>();
+    var tokenHandler = sp.GetRequiredService<TokenAuthHandler>();
     
     // Assign the base Blazor WebAssembly handler to actually execute the network request
-    jwtHandler.InnerHandler = new HttpClientHandler();
+    tokenHandler.InnerHandler = new HttpClientHandler();
     
     // Inject the pipeline into the new HttpClient
-    return new HttpClient(jwtHandler) 
+    return new HttpClient(tokenHandler) 
     { 
         BaseAddress = new Uri("http://localhost:5286/")
     };

@@ -3,7 +3,7 @@ using Client.Services;
 
 namespace Client.Handlers;
 
-public class JwtAuthorizationHandler(LocalStorageService localStorage) : DelegatingHandler
+public class TokenAuthHandler(LocalStorageService localStorage) : DelegatingHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {

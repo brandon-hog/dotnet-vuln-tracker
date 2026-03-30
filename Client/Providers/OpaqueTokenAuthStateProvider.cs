@@ -4,7 +4,7 @@ using Client.Services;
 
 namespace Client.Providers;
 
-public class JwtAuthStateProvider(LocalStorageService localStorage) : AuthenticationStateProvider
+public class OpaqueTokenAuthStateProvider(LocalStorageService localStorage) : AuthenticationStateProvider
 {
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
