@@ -3,30 +3,35 @@
 @inject HttpClient APIClient
 @inject NavigationManager Navigation
 
-<h3>Register</h3>
+<div class="container-fluid bg-dark text-white vh-100 d-flex flex-column justify-content-center align-items-center">
+    <div class="d-flex justify-content-center align-items-center ">
+        <div class="pe-5">
+            <h3 class="pb-4">Register</h3>
+            <div>
+                <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+                    <DataAnnotationsValidator />
 
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
-            <DataAnnotationsValidator />
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger">@errorMessage</div>
+                    }
 
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="alert alert-danger">@errorMessage</div>
-            }
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <InputText id="email" class="form-control" @bind-Value="registerModel.email"></InputText>
+                    </div>
 
-            <div class="mb-3">
-                <label for="email" class="form-label">Email Address</label>
-                <InputText id="email" class="form-control" @bind-Value="registerModel.email"></InputText>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <InputText type="password" id="password" class="form-control" @bind-Value="registerModel.password"></InputText>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Register</button>
+                </EditForm>
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <InputText type="password" id="password" class="form-control" @bind-Value="registerModel.password"></InputText>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Register</button>
-        </EditForm>
+        <img class="d-block mx-auto mb-4" src="icon.svg" alt="VulnTracker Logo" width="200" height="200">
     </div>
 </div>
 
