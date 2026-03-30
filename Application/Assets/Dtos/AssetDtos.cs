@@ -1,4 +1,4 @@
-namespace Application.Assets.Queries;
+namespace Application.Assets.Dtos;
 
 public record VulnerabilityDto(string CveId, string Description, string Severity, decimal CvssScore);
 
