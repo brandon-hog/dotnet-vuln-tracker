@@ -1,0 +1,64 @@
+@page "/register"
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient APIClient
+@inject NavigationManager Navigation
+
+<h3>Register</h3>
+
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+            <DataAnnotationsValidator />
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email Address</label>
+                <InputText id="email" class="form-control" @bind-Value="registerModel.email"></InputText>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <InputText type="password" id="password" class="form-control" @bind-Value="registerModel.password"></InputText>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Register</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private string? errorMessage;
+    private RegisterRequest registerModel = new RegisterRequest();
+
+    private async void HandleRegister()
+    {
+        errorMessage = null;
+
+        var response = await APIClient.PostAsJsonAsync("register", registerModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // On Success redirect to login to log in
+            Navigation.NavigateTo("/login");
+        } 
+        else 
+        {
+            errorMessage = "Invalid register attempt.";
+        }
+    }
+
+    private class RegisterRequest
+    {
+        [Required]
+        [EmailAddress]
+        public String email {get; set;} = String.Empty;
+        [Required]
+        public String password { get; set; } = String.Empty;
+    }
+
+
+}
