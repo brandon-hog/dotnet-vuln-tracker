@@ -9,6 +9,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 
+// Add cors for the frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorClient", policy =>
+    {
+        // Blazor WASM local port
+        policy.WithOrigins("https://localhost:5199") 
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // Tells MediatR to scan the Application assembly to find all the Handlers
 builder.Services.AddMediatR(cfg => 
     cfg.RegisterServicesFromAssembly(typeof(IAssetRepository).Assembly));
@@ -49,6 +61,10 @@ var app = builder.Build();
 // Middleware definition
 app.UseSwagger();
 app.UseSwaggerUI();
+
+// Add in cors
+app.UseHttpsRedirection();
+app.UseCors("AllowBlazorClient");
 
 app.UseAuthentication();
 app.UseAuthorization();
