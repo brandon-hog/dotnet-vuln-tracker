@@ -10,7 +10,7 @@
     <div class="d-flex justify-content-between">
         <h3>Assets</h3>
         <div class="d-flex input-group w-auto">
-            <InputText class="form-control w-auto" type="search" placeholder="Search..." @bind-Value=searchQuery>Search...</InputText>
+            <input class="form-control w-auto" type="search" placeholder="Search..." @bind=searchQuery>Search...</input>
             <button @onclick="HandleSubmit" class="btn btn-submit bg-dark text-white">Submit</button>
         </div>
     </div>
@@ -27,25 +27,37 @@
 @code {
     private bool loading = false;
     private string? error;
-    private String? searchQuery;
+    private String searchQuery = String.Empty;
     private int pageSize = 10;
     private int pageNumber = 1;
     private PagedResponse<AssetDto>? assets;
 
-    private async void HandleSubmit() {
+    /// <summary>
+    /// On first load, fetches the first ten assets
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnInitializedAsync()
+    {
+        await HandleSubmit();
+    }
+
+    private async Task HandleSubmit() {
         try
         {
             loading = true;
 
             // Get the assets from the paginated endpoint
             assets = await APIClient.GetFromJsonAsync<PagedResponse<AssetDto>>(
-                $"assets?pageSize={pageSize}&pageNumber={pageNumber}&searchQuery={searchQuery}"
+                $"assets?pageSize={pageSize}&pageNumber={pageNumber}&searchQuery={Uri.EscapeDataString(searchQuery)}"
             );
-            loading = false;
         }
         catch (HttpRequestException e)
         {
             error = e.Message;
+        }
+        finally
+        {
+            loading = false;
         }
     }
 }

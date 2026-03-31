@@ -1,6 +1,7 @@
 @page "/login"
 @using System.ComponentModel.DataAnnotations
 @using Client.Services
+@using Shared.Dtos
 @using Client.Providers
 @using Microsoft.AspNetCore.Components.Authorization
 @inject HttpClient APIClient
@@ -60,8 +61,9 @@
             var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
             if (result != null && !string.IsNullOrEmpty(result.AccessToken))
             {
-                // Save the token natively
+                // Save the tokens natively
                 await LocalStorage.SetItemAsync("accessToken", result.AccessToken);
+                await LocalStorage.SetItemAsync("refreshToken", result.RefreshToken);
                 
                 // Trigger Blazor to re-evaluate the <AuthorizeView> components
                 ((OpaqueTokenAuthStateProvider)AuthStateProvider).NotifyUserLoggedIn();
@@ -84,13 +86,5 @@
 
         [Required]
         public string Password { get; set; } = string.Empty;
-    }
-
-    private class LoginResponse
-    {
-        public string TokenType { get; set; } = string.Empty;
-        public string AccessToken { get; set; } = string.Empty;
-        public int ExpiresIn { get; set; }
-        public string RefreshToken { get; set; } = string.Empty;
     }
 }

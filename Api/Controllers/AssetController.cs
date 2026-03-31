@@ -9,7 +9,7 @@ namespace Api.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class AssetsController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
