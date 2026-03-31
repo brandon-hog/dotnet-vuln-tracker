@@ -1,6 +1,6 @@
 using Application.Interfaces;
 using MediatR;
-using Application.Assets.Dtos;
+using Shared.Dtos;
 
 namespace Application.Assets.Queries;
 

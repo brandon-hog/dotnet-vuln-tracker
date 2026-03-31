@@ -1,4 +1,4 @@
-namespace Application.Assets.Dtos;
+namespace Shared.Dtos;
 
 public class PagedResponse<T>
 {

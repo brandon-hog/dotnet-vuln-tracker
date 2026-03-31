@@ -1,4 +1,5 @@
-namespace Application.Assets.Dtos;
+namespace Shared.Dtos;
+
 public class PaginationFilter
 {
     public int PageNumber { get; set; } = 1;

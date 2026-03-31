@@ -1,4 +1,4 @@
-namespace Application.Assets.Dtos;
+namespace Shared.Dtos;
 
 public record VulnerabilityDto(string CveId, string Description, string Severity, decimal CvssScore);
 
@@ -8,3 +8,4 @@ public record AssetDto(
     string IpAddress, 
     decimal TotalRiskScore, 
     IEnumerable<VulnerabilityDto> Vulnerabilities);
+    

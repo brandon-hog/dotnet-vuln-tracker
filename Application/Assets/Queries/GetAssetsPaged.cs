@@ -1,4 +1,4 @@
-using Application.Assets.Dtos;
+using Shared.Dtos;
 using Application.Interfaces;
 using MediatR;
 

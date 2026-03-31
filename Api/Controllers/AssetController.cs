@@ -1,6 +1,6 @@
 using Application.Assets.Commands;
 using Application.Assets.Queries;
-using Application.Assets.Dtos;
+using Shared.Dtos;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

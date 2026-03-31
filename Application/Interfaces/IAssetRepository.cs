@@ -1,4 +1,4 @@
-using Application.Assets.Dtos;
+using Shared.Dtos;
 using Domain.Entities;
 
 namespace Application.Interfaces;
