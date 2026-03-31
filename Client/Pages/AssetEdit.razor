@@ -1,0 +1,184 @@
+@page "/assets/edit/{AssetId}"
+@using Client.Layout
+@using Microsoft.AspNetCore.Authorization
+@using Shared.Dtos
+@attribute [Authorize]
+@layout MainLayout
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="container-fluid d-flex flex-column h-100">
+    <div class="d-flex align-items-center mb-4">
+        <button class="btn btn-outline-secondary me-3" @onclick="NavigateBack" disabled="@_isSubmitting">
+            &larr; Back
+        </button>
+        <h3 class="mb-0">Edit Asset</h3>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="d-flex justify-content-center mt-5">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+    }
+    else
+    {
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <EditForm Model="@_asset" OnValidSubmit="HandleValidSubmitAsync">
+                            <DataAnnotationsValidator />
+
+                            @if (!string.IsNullOrEmpty(_errorMessage))
+                            {
+                                <div class="alert alert-danger mb-3">@_errorMessage</div>
+                            }
+
+                            <div class="mb-3">
+                                <label for="hostname" class="form-label fw-semibold">Hostname</label>
+                                <InputText id="hostname" class="form-control" @bind-Value="_asset.Hostname" disabled="@_isSubmitting" />
+                                <ValidationMessage For="@(() => _asset.Hostname)" class="text-danger small mt-1" />
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="ipAddress" class="form-label fw-semibold">IPv4 Address</label>
+                                <InputText id="ipAddress" class="form-control" @bind-Value="_asset.IpAddress" disabled="@_isSubmitting" />
+                                <ValidationMessage For="@(() => _asset.IpAddress)" class="text-danger small mt-1" />
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-light" @onclick="NavigateBack" disabled="@_isSubmitting">Cancel</button>
+                                <button type="submit" class="btn btn-dark" disabled="@_isSubmitting">
+                                    @if (_isSubmitting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <span>Saving...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Save Changes</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string AssetId { get; set; } = string.Empty;
+
+    private UpdateAssetDto _asset = new();
+    private bool _isLoading = true;
+    private bool _isSubmitting = false;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAssetAsync();
+    }
+
+    private async Task LoadAssetAsync()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var response = await Http.GetAsync($"assets/{Uri.EscapeDataString(AssetId)}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var loadedAsset = await response.Content.ReadFromJsonAsync<AssetDto>();
+
+                if (loadedAsset is null)
+                {
+                    _errorMessage = "Unable to load asset details.";
+                }
+                else
+                {
+                    _asset = new UpdateAssetDto
+                    {
+                        Hostname = loadedAsset.Hostname,
+                        IpAddress = loadedAsset.IpAddress
+                    };
+                }
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                _errorMessage = "The requested asset could not be found.";
+            }
+            else
+            {
+                _errorMessage = $"Failed to load asset details. Server returned: {response.StatusCode}";
+            }
+        }
+        catch (HttpRequestException e)
+        {
+            _errorMessage = $"Network error: {e.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task HandleValidSubmitAsync()
+    {
+        _isSubmitting = true;
+        _errorMessage = null;
+
+        try
+        {
+            var response = await Http.PatchAsJsonAsync($"assets/{Uri.EscapeDataString(AssetId)}", _asset);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/assets");
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                _errorMessage = "The asset no longer exists.";
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+                if (problemDetails?.Errors != null && problemDetails.Errors.Any())
+                {
+                    _errorMessage = string.Join(" | ", problemDetails.Errors.SelectMany(e => e.Value));
+                }
+                else
+                {
+                    _errorMessage = "Invalid data submitted. Please check your inputs.";
+                }
+            }
+            else
+            {
+                _errorMessage = $"Server error: {response.StatusCode}";
+            }
+        }
+        catch (HttpRequestException e)
+        {
+            _errorMessage = $"Network error: {e.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private void NavigateBack()
+    {
+        Navigation.NavigateTo("/assets");
+    }
+
+    private class ValidationProblemDetails
+    {
+        public Dictionary<string, string[]> Errors { get; set; } = new();
+    }
+}

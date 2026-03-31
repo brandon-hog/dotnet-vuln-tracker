@@ -46,4 +46,14 @@ public class AssetsController(IMediator mediator) : ControllerBase
         await mediator.Send(new DeleteAssetCommand(id), cancellationToken);
         return NoContent();
     }
+
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> UpdateAsset(Guid id, [FromBody] UpdateAssetDto request, CancellationToken cancellationToken)
+    {
+        var updated = await mediator.Send(
+            new UpdateAssetCommand(id, request.Hostname, request.IpAddress),
+            cancellationToken);
+
+        return updated ? NoContent() : NotFound();
+    }
 }

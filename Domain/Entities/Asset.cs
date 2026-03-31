@@ -20,6 +20,15 @@ public sealed class Asset
         IpAddress = ipAddress;
     }
 
+    public void UpdateDetails(string hostname, string ipAddress)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(hostname);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ipAddress);
+
+        Hostname = hostname;
+        IpAddress = ipAddress;
+    }
+
     public void AddVulnerability(Vulnerability vulnerability)
     {
         ArgumentNullException.ThrowIfNull(vulnerability);
