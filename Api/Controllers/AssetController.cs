@@ -10,7 +10,7 @@ namespace Api.Controllers;
 [Authorize]
 [ApiController]
 [Route("[controller]")]
-public class AssetsController(IMediator mediator, ILogger<AssetsController> logger) : ControllerBase
+public class AssetsController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> CreateAsset([FromBody] CreateAssetCommand command, CancellationToken cancellationToken)

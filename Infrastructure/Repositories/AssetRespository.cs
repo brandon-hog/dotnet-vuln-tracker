@@ -39,6 +39,15 @@ public class AssetRepository(AppDbContext context) : IAssetRepository
     {
         var query = context.Assets.AsQueryable();
 
+        // Apply the search filter before counting or paginating
+        if (!string.IsNullOrWhiteSpace(paginationFilter.SearchQuery))
+        {
+            var searchTerm = paginationFilter.SearchQuery.ToLower();
+            query = query.Where(a => 
+                a.Hostname.ToLower().Contains(searchTerm) || 
+                a.IpAddress.ToLower().Contains(searchTerm));
+        }
+
         // Get the total count
         var totalRecords = await query.CountAsync();
         // Get the paged data
