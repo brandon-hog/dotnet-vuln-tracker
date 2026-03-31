@@ -1,5 +1,6 @@
 using Application.Assets.Commands;
 using Application.Assets.Queries;
+using Application.Assets.Dtos;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +26,15 @@ public class AssetsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> GetAssetById(Guid id, CancellationToken cancellationToken)
     {
         var query = new GetAssetByIdQuery(id);
+        var assetDto = await mediator.Send(query, cancellationToken);
+        
+        return assetDto is not null ? Ok(assetDto) : NotFound();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAssetsPaged([FromQuery] PaginationFilter pageFilters, CancellationToken cancellationToken)
+    {
+        var query = new GetAssetsPagedQuery(pageFilters);
         var assetDto = await mediator.Send(query, cancellationToken);
         
         return assetDto is not null ? Ok(assetDto) : NotFound();

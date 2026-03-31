@@ -1,3 +1,4 @@
+using Application.Assets.Dtos;
 using Application.Interfaces;
 using Domain.Entities;
 using Infrastructure.Data;
@@ -32,5 +33,47 @@ public class AssetRepository(AppDbContext context) : IAssetRepository
     {
         context.Assets.Update(asset);
         await context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<PagedResponse<AssetDto>> GetPagedAssets(PaginationFilter paginationFilter, CancellationToken cancellationToken)
+    {
+        var query = context.Assets.AsQueryable();
+
+        // Get the total count
+        var totalRecords = await query.CountAsync();
+        // Get the paged data
+        var pagedData = await query
+            .Skip((paginationFilter.PageNumber - 1) * paginationFilter.PageSize)
+            .Take(paginationFilter.PageSize)
+            .Include(a => a.Vulnerabilities)
+            .ToListAsync();
+
+        // Convert the assets into the asset Dtos
+        PagedResponse<AssetDto> pagedAssetDtos = new PagedResponse<AssetDto>()
+        {
+            PageNumber = paginationFilter.PageNumber,
+            PageSize = paginationFilter.PageSize,
+            TotalRecords = totalRecords,
+            Data = []
+        };
+
+        foreach (var asset in pagedData)
+        {
+            var vulnerabilities = asset.Vulnerabilities.Select(v => 
+                new VulnerabilityDto(
+                    v.CveId, 
+                    v.Description, 
+                    v.Severity.ToString(), // Convert Enum to string for readable JSON
+                    v.CvssScore));
+
+            pagedAssetDtos.Data.Add(new AssetDto(
+                asset.Id,
+                asset.Hostname,
+                asset.IpAddress,
+                asset.CalculateTotalRiskScore(), // Expose calculated domain logic safely
+                vulnerabilities));
+        }
+
+        return pagedAssetDtos;
     }
 }
