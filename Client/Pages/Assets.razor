@@ -11,9 +11,16 @@
     @* Header / Search area *@
     <div class="d-flex justify-content-between">
         <h3>Assets</h3>
-        <div class="d-flex input-group w-auto">
-            <input class="form-control w-auto" type="search" placeholder="Search..." @bind=searchQuery />
-            <button @onclick="HandleSubmit" class="btn btn-submit bg-dark text-white">Submit</button>
+
+        <div class="d-flex gap-2">
+            <div class="d-flex input-group w-auto">
+                <input class="form-control w-auto" type="search" placeholder="Search..." @bind=searchQuery />
+                <button @onclick="HandleSubmit" class="btn btn-submit bg-dark text-white">Submit</button>
+            </div>
+            @* Create Asset button *@
+            <a href="/assets/create" class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-lg me-1"></i> Add Asset
+            </a>
         </div>
     </div>
 

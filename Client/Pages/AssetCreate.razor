@@ -1,0 +1,139 @@
+@page "/assets/create"
+@using Client.Layout
+@using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
+@using Shared.Dtos
+@layout MainLayout
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="container-fluid d-flex flex-column h-100">
+    @* Header area with back navigation *@
+    <div class="d-flex align-items-center mb-4">
+        <button class="btn btn-outline-secondary me-3" @onclick="NavigateBack" disabled="@_isSubmitting">
+            &larr; Back
+        </button>
+        <h3 class="mb-0">Add New Asset</h3>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    
+                    <EditForm Model="@_asset" OnValidSubmit="HandleValidSubmitAsync">
+                        <DataAnnotationsValidator />
+
+                        @* Server-side error surface *@
+                        @if (!string.IsNullOrEmpty(_errorMessage))
+                        {
+                            <div class="alert alert-danger mb-3">@_errorMessage</div>
+                        }
+
+                        <div class="mb-3">
+                            <label for="hostname" class="form-label fw-semibold">Hostname</label>
+                            <InputText id="hostname" class="form-control" @bind-Value="_asset.Hostname" placeholder="e.g., prod-db-01" disabled="@_isSubmitting" />
+                            @* Extracts the specific validation error for this field and displays it in red *@
+                            <ValidationMessage For="@(() => _asset.Hostname)" class="text-danger small mt-1" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="ipAddress" class="form-label fw-semibold">IPv4 Address</label>
+                            <InputText id="ipAddress" class="form-control" @bind-Value="_asset.IpAddress" placeholder="e.g., 192.168.1.50" disabled="@_isSubmitting" />
+                            <ValidationMessage For="@(() => _asset.IpAddress)" class="text-danger small mt-1" />
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-light" @onclick="NavigateBack" disabled="@_isSubmitting">Cancel</button>
+                            <button type="submit" class="btn btn-dark" disabled="@_isSubmitting">
+                                @if (_isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Saving...</span>
+                                }
+                                else
+                                {
+                                    <span>Create Asset</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateAssetDto _asset = new();
+    private bool _isSubmitting = false;
+    private string? _errorMessage;
+
+    private async Task HandleValidSubmitAsync()
+    {
+        _isSubmitting = true;
+        _errorMessage = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("assets", _asset);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Route back to the main data grid upon success
+                Navigation.NavigateTo("/assets");
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                // Reusing the 400 ProblemDetails parser to catch server-side model validation failures
+                var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+                if (problemDetails?.Errors != null && problemDetails.Errors.Any())
+                {
+                    _errorMessage = string.Join(" | ", problemDetails.Errors.SelectMany(e => e.Value));
+                }
+                else
+                {
+                    _errorMessage = "Invalid data submitted. Please check your inputs.";
+                }
+            }
+            else
+            {
+                _errorMessage = $"Server error: {response.StatusCode}";
+            }
+        }
+        catch (HttpRequestException e)
+        {
+            _errorMessage = $"Network error: {e.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private void NavigateBack()
+    {
+        Navigation.NavigateTo("/assets");
+    }
+
+    // NOTE: This class should be moved to your Shared.Dtos project.
+    // I am defining it here so you can see the DataAnnotations powering the frontend validation.
+    public class CreateAssetDto
+    {
+        [Required(ErrorMessage = "Hostname is required.")]
+        [StringLength(255, MinimumLength = 2, ErrorMessage = "Hostname must be between 2 and 255 characters.")]
+        public string Hostname { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "IP Address is required.")]
+        // Standard networking regex to enforce valid IPv4 structural formatting before the API is hit
+        [RegularExpression(@"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$", ErrorMessage = "Must be a valid IPv4 address.")]
+        public string IpAddress { get; set; } = string.Empty;
+    }
+
+    private class ValidationProblemDetails
+    {
+        public Dictionary<string, string[]> Errors { get; set; } = new();
+    }
+}
