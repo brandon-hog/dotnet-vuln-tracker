@@ -39,4 +39,11 @@ public class AssetsController(IMediator mediator) : ControllerBase
         
         return assetDto is not null ? Ok(assetDto) : NotFound();
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteAsset(Guid id, CancellationToken cancellationToken)
+    {
+        await mediator.Send(new DeleteAssetCommand(id), cancellationToken);
+        return NoContent();
+    }
 }

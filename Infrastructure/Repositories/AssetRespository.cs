@@ -29,6 +29,12 @@ public class AssetRepository(AppDbContext context) : IAssetRepository
         await context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task DeleteAsync(Asset asset, CancellationToken cancellationToken = default)
+    {
+        context.Assets.Remove(asset);
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task UpdateAsync(Asset asset, CancellationToken cancellationToken = default)
     {
         context.Assets.Update(asset);
