@@ -4,25 +4,99 @@
 @layout MainLayout
 @inject HttpClient APIClient
 
-<div class="container-fluid d-flex flex-column">
+<div class="container-fluid h-100 d-flex flex-column">
 
     @* Header / Search area *@
     <div class="d-flex justify-content-between">
         <h3>Assets</h3>
         <div class="d-flex input-group w-auto">
-            <input class="form-control w-auto" type="search" placeholder="Search..." @bind=searchQuery>Search...</input>
+            <input class="form-control w-auto" type="search" placeholder="Search..." @bind=searchQuery />
             <button @onclick="HandleSubmit" class="btn btn-submit bg-dark text-white">Submit</button>
         </div>
     </div>
 
-    @* Body / Resulting assets *@
+    <hr />
 
+    @* Body / Resulting assets *@
+    <div class="table-responsive my-4 flex-grow-1 shadow-sm rounded">
+        <table class="table table-hover table-striped align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col" style="width: 25%">Hostname</th>
+                    <th scope="col" style="width: 20%">IP Address</th>
+                    <th scope="col" style="width: 30%">Vulnerability Status</th>
+                    <th scope="col" style="width: 25%" class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white">
+                @if (loading)
+                {
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status"></div>
+                        </td>
+                    </tr>
+                }
+                else if (assets?.Data != null && assets.Data.Any())
+                {
+                    @foreach (var asset in assets.Data)
+                    {
+                        <tr>
+                            <td class="fw-semibold" title="ID: @asset.Id">@asset.Hostname</td>
+                            <td class="text-muted">@asset.IpAddress</td>
+                            <td>
+                                @if (asset.Vulnerabilities != null && asset.Vulnerabilities.Any())
+                                {
+                                    <span class="badge bg-danger rounded-pill shadow-sm">
+                                        @asset.Vulnerabilities.Count() CVEs
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success rounded-pill shadow-sm">Secure</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a href="/assets/@asset.Id" class="btn btn-sm btn-outline-dark">View Details</a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else if (assets != null)
+                {
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            No assets found matching your search criteria.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
     @* Page information *@
-
+    <div class="d-flex mt-auto justify-content-center">
+        <nav>
+            <ul class="pagination">
+                <li class="page-item @(pageNumber <= 1 ? "disabled" : "")">
+                    <a class="page-link" disabled=@(pageNumber <= 1) @onclick=decrementPage>
+                        Previous
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link">
+                        @pageNumber of @totalPages
+                    </a>
+                </li>
+                <li class="page-item @(pageNumber >= totalPages ? "disabled" : "")">
+                    <a class="page-link" disabled=@(pageNumber >= totalPages) @onclick=incrementPage>
+                        Next
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
 </div>
-
-
 
 @code {
     private bool loading = false;
@@ -30,15 +104,29 @@
     private String searchQuery = String.Empty;
     private int pageSize = 10;
     private int pageNumber = 1;
+    private int totalPages = 0;
     private PagedResponse<AssetDto>? assets;
 
     /// <summary>
     /// On first load, fetches the first ten assets
     /// </summary>
-    /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
         await HandleSubmit();
+    }
+
+    private async Task decrementPage() {
+        if (pageNumber > 1) {
+            pageNumber--;
+            await HandleSubmit();
+        }
+    }
+
+    private async Task incrementPage() {
+        if (pageNumber < totalPages) {
+            pageNumber++;
+            await HandleSubmit();
+        }
     }
 
     private async Task HandleSubmit() {
@@ -50,6 +138,9 @@
             assets = await APIClient.GetFromJsonAsync<PagedResponse<AssetDto>>(
                 $"assets?pageSize={pageSize}&pageNumber={pageNumber}&searchQuery={Uri.EscapeDataString(searchQuery)}"
             );
+
+            int totalRecords = assets?.TotalRecords ?? 0;
+            totalPages = pageSize > 0 ? (totalRecords + pageSize - 1) / pageSize : 0;
         }
         catch (HttpRequestException e)
         {
