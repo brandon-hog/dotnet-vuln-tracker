@@ -55,7 +55,7 @@ public class TokenAuthHandler(
     private async Task<bool> TryRefreshTokenAsync(string refreshToken)
     {
         // Create a temporary HttpClient that bypasses THIS handler to prevent an infinite 401 loop
-        using var client = new HttpClient { BaseAddress = new Uri("https://localhost:5286/") };
+        using var client = new HttpClient { BaseAddress = new Uri("http://localhost:5286/") };
         
         var request = new RefreshRequest { RefreshToken = refreshToken };
         var response = await client.PostAsJsonAsync("refresh", request);

@@ -1,7 +1,5 @@
 namespace Shared.Dtos;
 
-public record VulnerabilityDto(string CveId, string Description, string Severity, decimal CvssScore);
-
 public record AssetDto(
     Guid Id, 
     string Hostname, 

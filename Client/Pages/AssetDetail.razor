@@ -1,0 +1,171 @@
+@page "/assets/{AssetId}"
+@using Client.Layout
+@using Microsoft.AspNetCore.Authorization
+@using Shared.Dtos
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@layout MainLayout
+
+<div class="container-fluid d-flex flex-column h-100">
+    @* Header area with back navigation *@
+    <div class="d-flex align-items-center mb-4">
+        <button class="btn btn-outline-secondary me-3" @onclick="NavigateBack">
+            &larr; Back to Assets
+        </button>
+        <h3 class="mb-0">Asset Details</h3>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="d-flex justify-content-center mt-5">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+    else if (_asset != null)
+    {
+        <div class="row g-4">
+            @* System Information Panel *@
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="card-title mb-0">System Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-muted">Hostname</dt>
+                            <dd class="col-sm-8 fw-semibold">@_asset.Hostname</dd>
+                            
+                            <dt class="col-sm-4 text-muted">IP Address</dt>
+                            <dd class="col-sm-8">@_asset.IpAddress</dd>
+                            
+                            <dt class="col-sm-4 text-muted">Asset ID</dt>
+                            <dd class="col-sm-8 text-truncate" title="@_asset.Id">
+                                <small>@_asset.Id</small>
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            @* Vulnerability Breakdown Panel *@
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Discovered Vulnerabilities</h5>
+                        <span class="badge bg-light text-danger rounded-pill fs-6">
+                            @(_asset.Vulnerabilities?.Count() ?? 0)
+                        </span>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (_asset.Vulnerabilities != null && _asset.Vulnerabilities.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0 align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">CVE ID</th>
+                                            <th scope="col">Severity</th>
+                                            <th scope="col">CVSS Score</th>
+                                            <th scope="col">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @* Order by score so the most critical vulnerabilities sit at the top of the list *@
+                                        @foreach (var vuln in _asset.Vulnerabilities.OrderByDescending(v => v.CvssScore))
+                                        {
+                                            <tr>
+                                                <td class="fw-bold text-nowrap">@vuln.CveId</td>
+                                                <td>
+                                                    <span class="badge @GetSeverityBadgeClass(vuln.Severity)">
+                                                        @vuln.Severity
+                                                    </span>
+                                                </td>
+                                                <td class="fw-semibold">@vuln.CvssScore</td>
+                                                <td><small>@vuln.Description</small></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="p-5 text-center text-muted">
+                                <i class="bi bi-shield-check-fill fs-1 text-success mb-3 d-block"></i>
+                                No known vulnerabilities detected. This asset is currently secure.
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    // Captures the {AssetId} segment from the URL route
+    [Parameter]
+    public string AssetId { get; set; } = string.Empty;
+
+    private AssetDto? _asset;
+    private bool _isLoading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAssetDetailsAsync();
+    }
+
+    private async Task LoadAssetDetailsAsync()
+    {
+        _isLoading = true;
+        _error = null;
+
+        try
+        {
+            // Ensure ID is escaped to prevent URL manipulation or routing failures
+            var response = await Http.GetAsync($"Assets/{Uri.EscapeDataString(AssetId)}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                _asset = await response.Content.ReadFromJsonAsync<AssetDto>();
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                _error = "The requested asset could not be found in the database.";
+            }
+            else
+            {
+                _error = $"Failed to load asset details. Server returned: {response.StatusCode}";
+            }
+        }
+        catch (HttpRequestException e)
+        {
+            _error = $"Network error: {e.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void NavigateBack()
+    {
+        // Simple client-side routing back to the main list
+        Navigation.NavigateTo("/assets");
+    }
+
+    private string GetSeverityBadgeClass(string severity) => severity switch
+    {
+        "Critical" => "bg-danger",
+        "High" => "bg-warning text-dark",
+        "Medium" => "bg-info text-dark",
+        "Low" => "bg-secondary",
+        _ => "bg-light text-dark"
+    };
+}

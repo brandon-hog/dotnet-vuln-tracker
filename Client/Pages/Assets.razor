@@ -1,6 +1,8 @@
 @page "/assets"
 @using Client.Layout
+@using Microsoft.AspNetCore.Authorization
 @using Shared.Dtos
+@attribute [Authorize]
 @layout MainLayout
 @inject HttpClient APIClient
 
