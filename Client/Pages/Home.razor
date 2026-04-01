@@ -6,19 +6,19 @@
 
 <div class="home-landing">
     <header class="home-header sticky-top">
-        <nav class="navbar navbar-expand-lg bg-white border-bottom">
+        <nav class="navbar navbar-expand-lg border-bottom">
             <div class="container py-2">
-                <a class="navbar-brand fw-semibold text-dark" href="/">VulnTracker</a>
+                <a class="navbar-brand fw-semibold" href="/">VulnTracker</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#landingNav" aria-controls="landingNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="landingNav">
                     <ul class="navbar-nav ms-lg-4 me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link text-secondary" href="#features">Features</a>
+                            <a class="nav-link" href="#features">Features</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-secondary" href="#workflow">How It Works</a>
+                            <a class="nav-link" href="#workflow">How It Works</a>
                         </li>
                     </ul>
                     <div class="d-flex align-items-center gap-2 ms-lg-auto">
@@ -34,9 +34,9 @@
         <div class="container py-md-5">
             <div class="row align-items-center g-5">
                 <div class="col-lg-6">
-                    <span class="badge rounded-pill text-bg-light border mb-3 home-hero-badge">Built for modern security operations</span>
-                    <h1 class="display-5 fw-bold text-dark mb-3">One clean dashboard for assets, vulnerabilities, and risk priorities.</h1>
-                    <p class="lead text-secondary mb-4">
+                    <span class="badge rounded-pill border mb-3 home-hero-badge">Built for modern security operations</span>
+                    <h1 class="display-5 fw-bold mb-3">One clean dashboard for assets, vulnerabilities, and risk priorities.</h1>
+                    <p class="lead home-muted mb-4">
                         Track assets, correlate software versions with NVD data, and focus remediation on what creates the highest business impact.
                     </p>
                     <div class="d-grid gap-2 d-sm-flex">
@@ -46,7 +46,7 @@
                             </Authorized>
                             <NotAuthorized>
                                 <a href="/register" class="btn btn-primary btn-lg px-4">Get Started</a>
-                                <a href="#features" class="btn btn-outline-secondary btn-lg px-4">Explore Features</a>
+                                <a href="#features" class="btn btn-outline-light btn-lg px-4">Explore Features</a>
                             </NotAuthorized>
                         </AuthorizeView>
                     </div>
@@ -64,7 +64,7 @@
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="fw-bold mb-3">Built for teams that need clarity fast</h2>
-                <p class="text-secondary mb-0">Everything you need to monitor your environment and take action on critical vulnerabilities.</p>
+                <p class="home-muted mb-0">Everything you need to monitor your environment and take action on critical vulnerabilities.</p>
             </div>
             <div class="row g-4">
                 <div class="col-md-6 col-lg-4">
@@ -72,7 +72,7 @@
                         <div class="card-body p-4">
                             <p class="small text-uppercase fw-semibold text-primary mb-2">Inventory</p>
                             <h3 class="h5 fw-bold mb-3">Dynamic asset visibility</h3>
-                            <p class="text-secondary mb-0">Maintain a current, authenticated inventory of hostnames and IP addresses across your infrastructure.</p>
+                            <p class="home-muted mb-0">Maintain a current, authenticated inventory of hostnames and IP addresses across your infrastructure.</p>
                         </div>
                     </article>
                 </div>
@@ -81,7 +81,7 @@
                         <div class="card-body p-4">
                             <p class="small text-uppercase fw-semibold text-primary mb-2">Correlation</p>
                             <h3 class="h5 fw-bold mb-3">Automated CVE matching</h3>
-                            <p class="text-secondary mb-0">Automatically compare tracked software versions against the latest NVD releases to reduce manual triage.</p>
+                            <p class="home-muted mb-0">Automatically compare tracked software versions against the latest NVD releases to reduce manual triage.</p>
                         </div>
                     </article>
                 </div>
@@ -90,7 +90,7 @@
                         <div class="card-body p-4">
                             <p class="small text-uppercase fw-semibold text-primary mb-2">Prioritization</p>
                             <h3 class="h5 fw-bold mb-3">Risk-focused scoring</h3>
-                            <p class="text-secondary mb-0">View severity and CVSS context in one place so your team can prioritize the highest-risk vulnerabilities first.</p>
+                            <p class="home-muted mb-0">View severity and CVSS context in one place so your team can prioritize the highest-risk vulnerabilities first.</p>
                         </div>
                     </article>
                 </div>
@@ -103,28 +103,28 @@
             <div class="row g-4 align-items-stretch">
                 <div class="col-lg-5">
                     <h2 class="fw-bold mb-3">Simple workflow, stronger outcomes</h2>
-                    <p class="text-secondary mb-0">
+                    <p class="home-muted mb-0">
                         Move from fragmented spreadsheets and disconnected scanners to one repeatable process for visibility and remediation planning.
                     </p>
                 </div>
                 <div class="col-lg-7">
                     <div class="row g-3">
                         <div class="col-sm-4">
-                            <div class="home-step h-100 p-3 p-md-4 rounded-3 bg-white border">
+                            <div class="home-step h-100 p-3 p-md-4 rounded-3 border">
                                 <p class="fw-semibold text-primary mb-2">1. Add</p>
-                                <p class="mb-0 text-secondary">Register assets and software details.</p>
+                                <p class="mb-0 home-muted">Register assets and software details.</p>
                             </div>
                         </div>
                         <div class="col-sm-4">
-                            <div class="home-step h-100 p-3 p-md-4 rounded-3 bg-white border">
+                            <div class="home-step h-100 p-3 p-md-4 rounded-3 border">
                                 <p class="fw-semibold text-primary mb-2">2. Correlate</p>
-                                <p class="mb-0 text-secondary">Map versions to current CVEs automatically.</p>
+                                <p class="mb-0 home-muted">Map versions to current CVEs automatically.</p>
                             </div>
                         </div>
                         <div class="col-sm-4">
-                            <div class="home-step h-100 p-3 p-md-4 rounded-3 bg-white border">
+                            <div class="home-step h-100 p-3 p-md-4 rounded-3 border">
                                 <p class="fw-semibold text-primary mb-2">3. Act</p>
-                                <p class="mb-0 text-secondary">Prioritize remediation using severity context.</p>
+                                <p class="mb-0 home-muted">Prioritize remediation using severity context.</p>
                             </div>
                         </div>
                     </div>
@@ -133,7 +133,7 @@
         </div>
     </section>
 
-    <footer class="py-4 text-center text-secondary border-top bg-white">
+    <footer class="py-4 text-center home-muted border-top">
         <div class="container">
             VulnTracker helps teams identify and prioritize vulnerabilities with confidence.
         </div>
