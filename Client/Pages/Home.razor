@@ -1,106 +1,144 @@
-﻿@page "/"
+@page "/"
 @using Client.Providers
 @using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>VulnTracker - Centralized Vulnerability Management</PageTitle>
 
-@* --- Navbar Section --- *@
-<header class="sticky-top">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-black">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">VulnTracker</a>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#features">Features</a>
-                    </li>
-                </ul>
+<div class="home-landing">
+    <header class="home-header sticky-top">
+        <nav class="navbar navbar-expand-lg bg-white border-bottom">
+            <div class="container py-2">
+                <a class="navbar-brand fw-semibold text-dark" href="/">VulnTracker</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#landingNav" aria-controls="landingNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="landingNav">
+                    <ul class="navbar-nav ms-lg-4 me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link text-secondary" href="#features">Features</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-secondary" href="#workflow">How It Works</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center gap-2 ms-lg-auto">
+                        <a class="btn btn-outline-primary px-3" href="/register">Register</a>
+                        <a class="btn btn-primary px-3" href="/login">Login</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <section class="home-hero py-5">
+        <div class="container py-md-5">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <span class="badge rounded-pill text-bg-light border mb-3 home-hero-badge">Built for modern security operations</span>
+                    <h1 class="display-5 fw-bold text-dark mb-3">One clean dashboard for assets, vulnerabilities, and risk priorities.</h1>
+                    <p class="lead text-secondary mb-4">
+                        Track assets, correlate software versions with NVD data, and focus remediation on what creates the highest business impact.
+                    </p>
+                    <div class="d-grid gap-2 d-sm-flex">
+                        <AuthorizeView>
+                            <Authorized>
+                                <a href="/assets" class="btn btn-primary btn-lg px-4">View Network Assets</a>
+                            </Authorized>
+                            <NotAuthorized>
+                                <a href="/register" class="btn btn-primary btn-lg px-4">Get Started</a>
+                                <a href="#features" class="btn btn-outline-secondary btn-lg px-4">Explore Features</a>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <div class="home-logo-wrap p-4 p-lg-5 mx-auto">
+                        <img class="img-fluid" src="icon.svg" alt="VulnTracker Logo" width="220" height="220">
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="pe-5">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="/register">Register</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/login">Login</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-</header>
+    </section>
 
-@* --- Hero Section --- *@
-<div class="px-4 py-5 mb-5 text-center bg-dark text-white shadow">
-    <img class="d-block mx-auto mb-4" src="icon.svg" alt="VulnTracker Logo" width="200" height="200">
-    <h1 class="display-5 fw-bold text-light">Centralize Your Security Posture</h1>
-    <div class="col-lg-6 mx-auto">
-        <p class="lead mb-4 text-white-50">
-            Automatically track assets, correlate software versions with the National Vulnerability Database (NVD), and prioritize critical CVEs. VulnTracker gives you the visibility needed to remediate faster.
-        </p>
-        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-            <AuthorizeView>
-                <Authorized>
-                    @* If logged in, send them straight to the data *@
-                    <a href="/assets" class="btn btn-primary btn-lg px-4 gap-3">View Network Assets</a>
-                </Authorized>
-                <NotAuthorized>
-                    @* If not logged in, show primary CTAs *@
-                    <a href="/register" class="btn btn-primary btn-lg px-4 gap-3">Get Started</a>
-                    <a href="#features" class="btn btn-outline-light btn-lg px-4">Explore Features</a>
-                </NotAuthorized>
-            </AuthorizeView>
+    <section class="py-5" id="features">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-3">Built for teams that need clarity fast</h2>
+                <p class="text-secondary mb-0">Everything you need to monitor your environment and take action on critical vulnerabilities.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <article class="card h-100 border-0 shadow-sm home-feature-card">
+                        <div class="card-body p-4">
+                            <p class="small text-uppercase fw-semibold text-primary mb-2">Inventory</p>
+                            <h3 class="h5 fw-bold mb-3">Dynamic asset visibility</h3>
+                            <p class="text-secondary mb-0">Maintain a current, authenticated inventory of hostnames and IP addresses across your infrastructure.</p>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <article class="card h-100 border-0 shadow-sm home-feature-card">
+                        <div class="card-body p-4">
+                            <p class="small text-uppercase fw-semibold text-primary mb-2">Correlation</p>
+                            <h3 class="h5 fw-bold mb-3">Automated CVE matching</h3>
+                            <p class="text-secondary mb-0">Automatically compare tracked software versions against the latest NVD releases to reduce manual triage.</p>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <article class="card h-100 border-0 shadow-sm home-feature-card">
+                        <div class="card-body p-4">
+                            <p class="small text-uppercase fw-semibold text-primary mb-2">Prioritization</p>
+                            <h3 class="h5 fw-bold mb-3">Risk-focused scoring</h3>
+                            <p class="text-secondary mb-0">View severity and CVSS context in one place so your team can prioritize the highest-risk vulnerabilities first.</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
+
+    <section class="py-5 home-workflow" id="workflow">
+        <div class="container">
+            <div class="row g-4 align-items-stretch">
+                <div class="col-lg-5">
+                    <h2 class="fw-bold mb-3">Simple workflow, stronger outcomes</h2>
+                    <p class="text-secondary mb-0">
+                        Move from fragmented spreadsheets and disconnected scanners to one repeatable process for visibility and remediation planning.
+                    </p>
+                </div>
+                <div class="col-lg-7">
+                    <div class="row g-3">
+                        <div class="col-sm-4">
+                            <div class="home-step h-100 p-3 p-md-4 rounded-3 bg-white border">
+                                <p class="fw-semibold text-primary mb-2">1. Add</p>
+                                <p class="mb-0 text-secondary">Register assets and software details.</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="home-step h-100 p-3 p-md-4 rounded-3 bg-white border">
+                                <p class="fw-semibold text-primary mb-2">2. Correlate</p>
+                                <p class="mb-0 text-secondary">Map versions to current CVEs automatically.</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="home-step h-100 p-3 p-md-4 rounded-3 bg-white border">
+                                <p class="fw-semibold text-primary mb-2">3. Act</p>
+                                <p class="mb-0 text-secondary">Prioritize remediation using severity context.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-4 text-center text-secondary border-top bg-white">
+        <div class="container">
+            VulnTracker helps teams identify and prioritize vulnerabilities with confidence.
+        </div>
+    </footer>
 </div>
-
-@* --- Features Section (Traditional Grid) --- *@
-<div class="container px-4 py-5" id="features">
-    <h2 class="pb-2 border-bottom fw-bold text-center mb-5">Built for Security Teams</h2>
-    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
-        
-        @* Feature 1 *@
-        <div class="col d-flex align-items-start">
-            <div class="icon-square bg-light text-primary flex-shrink-0 me-3 rounded-circle p-3 shadow-sm">
-                <i class="bi bi-hdd-network-fill fs-4"></i> @* Assuming Bootstrap Icons are enabled *@
-            </div>
-            <div>
-                <h3 class="fs-4 fw-bold">Dynamic Asset Inventory</h3>
-                <p class="text-muted">Maintain a real-time, authenticated inventory of your hostnames and IP addresses across your infrastructure.</p>
-            </div>
-        </div>
-
-        @* Feature 2 *@
-        <div class="col d-flex align-items-start">
-            <div class="icon-square bg-light text-primary flex-shrink-0 me-3 rounded-circle p-3 shadow-sm">
-                <i class="bi bi-shield-check-fill fs-4"></i>
-            </div>
-            <div>
-                <h3 class="fs-4 fw-bold">Automated CVE Correlation</h3>
-                <p class="text-muted">API integration with the National Vulnerability Database automatically scans your assets against latest vulnerability releases.</p>
-            </div>
-        </div>
-
-        @* Feature 3 *@
-        <div class="col d-flex align-items-start">
-            <div class="icon-square bg-light text-primary flex-shrink-0 me-3 rounded-circle p-3 shadow-sm">
-                <i class="bi bi-bar-chart-steps fs-4"></i>
-            </div>
-            <div>
-                <h3 class="fs-4 fw-bold">Criticality Scoring</h3>
-                <p class="text-muted">View full CVSS scores and severities instantly. Prioritize high-risk vulnerabilities that matter most to your business.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-@* Minimal footer for a professional portfolio look *@
-<footer class="pt-5 mt-5 text-muted border-top text-center">
-    Built with .NET 10, PostgreSQL, and Bootstrap | VulnTracker Portfolio Demo
-</footer>
 
 @code {
     [CascadingParameter]
