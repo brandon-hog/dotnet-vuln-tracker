@@ -27,7 +27,7 @@ builder.Services.AddScoped(sp =>
     // Inject the pipeline into the new HttpClient
     return new HttpClient(tokenHandler) 
     { 
-        BaseAddress = new Uri("http://localhost:5286/")
+        BaseAddress = new Uri("http://localhost:8080")
     };
 });
 
