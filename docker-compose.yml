@@ -1,0 +1,30 @@
+services:
+  client:
+    build:
+      context: .
+      dockerfile: Client/Dockerfile
+    ports:
+      - "80:80"
+
+  server:
+    build:
+      context: .
+      dockerfile: Api/Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: vuln_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
