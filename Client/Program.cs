@@ -16,6 +16,9 @@ builder.Services.AddTransient<TokenAuthHandler>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, OpaqueTokenAuthStateProvider>();
 
+// Get the API url from any config source
+var apiUrl = builder.Configuration["ApiUrl"] ?? throw new Exception("No API Url configured");
+
 builder.Services.AddScoped(sp => 
 {
     // Resolve custom JWT handler from the DI container
@@ -27,7 +30,7 @@ builder.Services.AddScoped(sp =>
     // Inject the pipeline into the new HttpClient
     return new HttpClient(tokenHandler) 
     { 
-        BaseAddress = new Uri("http://localhost:8080")
+        BaseAddress = new Uri(apiUrl)
     };
 });
 
