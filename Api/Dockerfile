@@ -7,7 +7,7 @@ WORKDIR /source
 COPY . .
 
 RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
-    dotnet publish -c Release -o /app
+    dotnet publish "Api/Api.csproj" -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS final
 WORKDIR /app
