@@ -9,13 +9,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 
+// Add in allowed origins from the appsettings.json
+var allowedOrigins = builder.Configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>();
+
 // Add cors for the frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", policy =>
     {
         // Blazor WASM local port
-        policy.WithOrigins("http://localhost:5199") 
+        policy.WithOrigins(allowedOrigins ?? ["localhost"]) 
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
