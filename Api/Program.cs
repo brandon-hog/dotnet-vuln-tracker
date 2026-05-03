@@ -9,13 +9,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 
+// Add in allowed origins from the appsettings.json
+var allowedOrigins = builder.Configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>();
+
 // Add cors for the frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", policy =>
     {
         // Blazor WASM local port
-        policy.WithOrigins("http://localhost:5199") 
+        policy.WithOrigins(allowedOrigins ?? ["http://localhost"]) 
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -57,6 +60,14 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+// Initialize the database if not initialized, and updates the schema without deleting data
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    // Applies pending migrations or creates the database if it doesn't exist
+    dbContext.Database.Migrate(); 
+}
 
 // Middleware definition
 app.UseSwagger();
