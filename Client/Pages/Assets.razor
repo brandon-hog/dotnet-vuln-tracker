@@ -8,6 +8,27 @@
 
 <div class="container-fluid h-100 d-flex flex-column">
 
+    @if (deleteConfirm)
+    {
+        <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog model-dialog-centered">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" @onclick="() => deleteConfirm = false" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this asset? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => deleteConfirm = false">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeleteAsset">Delete</button>
+                </div>
+                </div>
+            </div>
+        </div>
+    }
+
     @* Header / Search area *@
     <div class="d-flex justify-content-between">
         <h3>Assets</h3>
@@ -78,7 +99,10 @@
                                         type="button"
                                         class="btn btn-sm btn-danger"
                                         disabled="@(loading || deletingAssetIds.Contains(asset.Id))"
-                                        @onclick="() => DeleteAsset(asset.Id)">
+                                        @onclick="() => {
+                                            deleteConfirm = true;
+                                            currentAssetId = asset.Id;
+                                        }">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
                                             <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
                                         </svg>
@@ -126,6 +150,8 @@
 
 @code {
     private bool loading = false;
+    private bool deleteConfirm = false;
+    private Guid currentAssetId;
     private string? error;
     private String searchQuery = String.Empty;
     private int pageSize = 10;
@@ -179,18 +205,18 @@
         }
     }
 
-    private async Task DeleteAsset(Guid assetId)
+    private async Task DeleteAsset()
     {
-        if (deletingAssetIds.Contains(assetId))
+        if (deletingAssetIds.Contains(currentAssetId))
         {
             return;
         }
 
-        deletingAssetIds.Add(assetId);
+        deletingAssetIds.Add(currentAssetId);
 
         try
         {
-            await APIClient.DeleteAsync($"assets/{assetId}");
+            await APIClient.DeleteAsync($"assets/{currentAssetId}");
             await HandleSubmit();
         }
         catch (HttpRequestException e)
@@ -199,7 +225,8 @@
         }
         finally
         {
-            deletingAssetIds.Remove(assetId);
+            deletingAssetIds.Remove(currentAssetId);
+            deleteConfirm = false;
         }
     }
 }
