@@ -1,6 +1,8 @@
 @page "/"
 @using Client.Providers
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@attribute [AllowAnonymous]
 
 <PageTitle>VulnTracker - Centralized Vulnerability Management</PageTitle>
 

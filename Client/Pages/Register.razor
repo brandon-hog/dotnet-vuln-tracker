@@ -1,7 +1,9 @@
 @page "/register"
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
 @inject HttpClient APIClient
 @inject NavigationManager Navigation
+@attribute [AllowAnonymous]
 
 <div class="container-fluid text-white vh-100 d-flex justify-content-center align-items-center" style="background-color: rgba(13, 15, 19, 0.96);">
 
