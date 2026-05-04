@@ -1,4 +1,7 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using Client.Handlers
+@inject TokenAuthHandler AuthHandler
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <span class="navbar-brand">VulnTracker</span>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -8,7 +11,7 @@
 </div>
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
+    <nav class="nav flex-column h-100">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="assets">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tablet-fill" viewBox="0 0 16 16">
@@ -16,6 +19,10 @@
                 </svg>
                 Assets
             </NavLink>
+        </div>
+
+        <div class="mb-2 px-3 mt-auto">
+            <button class="btn btn-primary w-100" @onclick="AuthHandler.WipeSessionAndRedirect">Log out</button>
         </div>
     </nav>
 </div>

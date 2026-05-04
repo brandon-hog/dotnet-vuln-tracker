@@ -77,7 +77,7 @@ public class TokenAuthHandler(
         return false;
     }
 
-    private async Task WipeSessionAndRedirect()
+    public async Task WipeSessionAndRedirect()
     {
         await localStorage.RemoveItemAsync("accessToken");
         await localStorage.RemoveItemAsync("refreshToken");
