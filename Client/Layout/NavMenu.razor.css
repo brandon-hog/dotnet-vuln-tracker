@@ -65,14 +65,16 @@
     color: white;
 }
 
+/* Hide menu body on small screens only; avoid Bootstrap's `.collapse` class (conflicts with .collapse:not(.show)). */
+@media (max-width: 640.98px) {
+    .nav-scrollable.nav-menu-collapsed {
+        display: none;
+    }
+}
+
 @media (min-width: 641px) {
     .navbar-toggler {
         display: none;
-    }
-
-    .collapse {
-        /* Never collapse the sidebar for wide screens */
-        display: block;
     }
 
     .nav-scrollable {
