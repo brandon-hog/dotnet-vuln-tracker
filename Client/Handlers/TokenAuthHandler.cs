@@ -12,8 +12,11 @@ namespace Client.Handlers;
 public class TokenAuthHandler(
     LocalStorageService localStorage,
     NavigationManager navigationManager,
-    AuthenticationStateProvider authStateProvider) : DelegatingHandler
+    AuthenticationStateProvider authStateProvider,
+    IConfiguration config
+    ) : DelegatingHandler
 {
+    private string serverUrl = config["ApiUrl"] ?? "http://localhost:8080";
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var token = await localStorage.GetItemAsync<string>("accessToken");
@@ -55,7 +58,7 @@ public class TokenAuthHandler(
     private async Task<bool> TryRefreshTokenAsync(string refreshToken)
     {
         // Create a temporary HttpClient that bypasses THIS handler to prevent an infinite 401 loop
-        using var client = new HttpClient { BaseAddress = new Uri("http://localhost:5286/") };
+        using var client = new HttpClient { BaseAddress = new Uri(serverUrl) };
         
         var request = new RefreshRequest { RefreshToken = refreshToken };
         var response = await client.PostAsJsonAsync("refresh", request);

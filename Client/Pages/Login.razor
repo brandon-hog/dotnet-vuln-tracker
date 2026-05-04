@@ -9,10 +9,25 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 
-<div class="container-fluid bg-dark text-white vh-100 d-flex justify-content-center align-items-center">
+<div class="container-fluid text-white vh-100 d-flex justify-content-center align-items-center" style="background-color: rgba(13, 15, 19, 0.96);">
+
+    <button type="button" class="btn btn-outline-light position-absolute top-0 start-0 m-4" @onclick="NavigateBack">
+        &larr; Back
+    </button>
+
     <div class="d-flex justify-content-center align-items-center ">
         <div class="pe-5">
             <h3 class="pb-4">Login</h3>
+
+            @if (isLoading)
+            {
+                <div class="d-flex justify-content-center my-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+
             <div>
                 <div>
                     <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
@@ -47,34 +62,49 @@
 
 @code {
     private LoginRequest loginModel = new();
+    private bool isLoading;
     private string? errorMessage;
 
     private async Task HandleLogin()
     {
-        errorMessage = null;
+        try {
+            isLoading = true;
+            errorMessage = null;
 
-        // Post to the Minimal API Identity endpoint
-        var response = await APIClient.PostAsJsonAsync("login", loginModel);
+            // Post to the Minimal API Identity endpoint
+            var response = await APIClient.PostAsJsonAsync("login", loginModel);
 
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-            if (result != null && !string.IsNullOrEmpty(result.AccessToken))
+            if (response.IsSuccessStatusCode)
             {
-                // Save the tokens natively
-                await LocalStorage.SetItemAsync("accessToken", result.AccessToken);
-                await LocalStorage.SetItemAsync("refreshToken", result.RefreshToken);
-                
-                // Trigger Blazor to re-evaluate the <AuthorizeView> components
-                ((OpaqueTokenAuthStateProvider)AuthStateProvider).NotifyUserLoggedIn();
-                
-                Navigation.NavigateTo("/assets");
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                if (result != null && !string.IsNullOrEmpty(result.AccessToken))
+                {
+                    // Save the tokens natively
+                    await LocalStorage.SetItemAsync("accessToken", result.AccessToken);
+                    await LocalStorage.SetItemAsync("refreshToken", result.RefreshToken);
+                    
+                    // Trigger Blazor to re-evaluate the <AuthorizeView> components
+                    ((OpaqueTokenAuthStateProvider)AuthStateProvider).NotifyUserLoggedIn();
+                    
+                    Navigation.NavigateTo("/assets");
+                }
             }
+            else
+            {
+                errorMessage = "Invalid login attempt.";
+            }
+            
+            isLoading = false;
+
+        } catch (Exception error) {
+            isLoading = false;
+            errorMessage = error.Message;
         }
-        else
-        {
-            errorMessage = "Invalid login attempt.";
-        }
+    }
+
+    private void NavigateBack()
+    {
+        Navigation.NavigateTo("/");
     }
 
     // DTOs matching the Identity API expectations
