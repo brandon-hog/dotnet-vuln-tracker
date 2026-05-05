@@ -1,6 +1,7 @@
 @page "/assets/edit/{AssetId}"
 @using Client.Layout
 @using Microsoft.AspNetCore.Authorization
+@using Shared
 @using Shared.Dtos
 @attribute [Authorize]
 @layout MainLayout
@@ -47,6 +48,17 @@
                                 <ValidationMessage For="@(() => _asset.IpAddress)" class="text-danger small mt-1" />
                             </div>
 
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">CPE</label>
+                                <div class="input-group">
+                                    <InputText class="form-control" @bind-Value="_asset.Cpe" readonly />
+                                    <button type="button" class="btn btn-outline-dark" @onclick="OpenCpeModal" disabled="@_isSubmitting">
+                                        Build/Edit CPE
+                                    </button>
+                                </div>
+                                <ValidationMessage For="@(() => _asset.Cpe)" class="text-danger small mt-1" />
+                            </div>
+
                             <div class="d-flex justify-content-end gap-2">
                                 <button type="button" class="btn btn-light" @onclick="NavigateBack" disabled="@_isSubmitting">Cancel</button>
                                 <button type="submit" class="btn btn-dark" disabled="@_isSubmitting">
@@ -69,13 +81,17 @@
     }
 </div>
 
+<CpeModal @bind-Value="_cpeModel" IsOpen="@_isCpeModalOpen" OnClose="CloseCpeModal" Disabled="@_isSubmitting" />
+
 @code {
     [Parameter]
     public string AssetId { get; set; } = string.Empty;
 
     private UpdateAssetDto _asset = new();
+    private CPE _cpeModel = new();
     private bool _isLoading = true;
     private bool _isSubmitting = false;
+    private bool _isCpeModalOpen = false;
     private string? _errorMessage;
 
     protected override async Task OnInitializedAsync()
@@ -105,8 +121,13 @@
                     _asset = new UpdateAssetDto
                     {
                         Hostname = loadedAsset.Hostname,
-                        IpAddress = loadedAsset.IpAddress
+                        IpAddress = loadedAsset.IpAddress,
+                        Cpe = loadedAsset.Cpe
                     };
+
+                    _cpeModel = CPE.TryParse(loadedAsset.Cpe, out var parsedCpe)
+                        ? parsedCpe!
+                        : new CPE();
                 }
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -132,6 +153,7 @@
     {
         _isSubmitting = true;
         _errorMessage = null;
+        _asset.Cpe = _cpeModel.ToString();
 
         try
         {
@@ -175,6 +197,18 @@
     private void NavigateBack()
     {
         Navigation.NavigateTo("/assets");
+    }
+
+    private void OpenCpeModal()
+    {
+        _isCpeModalOpen = true;
+    }
+
+    private Task CloseCpeModal()
+    {
+        _asset.Cpe = _cpeModel.ToString();
+        _isCpeModalOpen = false;
+        return Task.CompletedTask;
     }
 
     private class ValidationProblemDetails

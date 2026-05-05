@@ -29,6 +29,7 @@ public class GetAssetByIdQueryHandler(IAssetRepository repository)
             asset.Id,
             asset.Hostname,
             asset.IpAddress,
+            asset.Cpe,
             asset.CalculateTotalRiskScore(), // Expose calculated domain logic safely
             vulnerabilities);
     }

@@ -5,10 +5,12 @@ namespace Tests;
 
 public class AssetTests
 {
+    private const string DummyCpe = "cpe:2.3:a:vendor:product:1.0:*:*:en-us:*:*:*:*";
+
     [Fact]
     public void Constructor_ValidInputs_CreatesAsset()
     {
-        var asset = new Asset("Web-Server-01", "192.168.1.10");
+        var asset = new Asset("Web-Server-01", "192.168.1.10", DummyCpe);
 
         Assert.NotEqual(Guid.Empty, asset.Id);
         Assert.Equal("Web-Server-01", asset.Hostname);
@@ -21,13 +23,13 @@ public class AssetTests
     [InlineData(" ", "192.168.1.10")]
     public void Constructor_InvalidHostname_ThrowsArgumentException(string invalidHostname, string ip)
     {
-        Assert.ThrowsAny<ArgumentException>(() => new Asset(invalidHostname, ip));
+        Assert.ThrowsAny<ArgumentException>(() => new Asset(invalidHostname, ip, DummyCpe));
     }
 
     [Fact]
     public void AddVulnerability_NewCve_AddsToCollection()
     {
-        var asset = new Asset("Db-Server", "10.0.0.5");
+        var asset = new Asset("Db-Server", "10.0.0.5", DummyCpe);
         var vuln = new Vulnerability("CVE-2024-1234", "SQL Injection", Severity.Critical, 9.8m);
 
         asset.AddVulnerability(vuln);
@@ -39,7 +41,7 @@ public class AssetTests
     [Fact]
     public void AddVulnerability_DuplicateCve_DoesNotAddTwice()
     {
-        var asset = new Asset("Db-Server", "10.0.0.5");
+        var asset = new Asset("Db-Server", "10.0.0.5", DummyCpe);
         var vuln1 = new Vulnerability("CVE-2024-1234", "SQL Injection", Severity.Critical, 9.8m);
         var vuln2 = new Vulnerability("CVE-2024-1234", "Duplicate Entry", Severity.High, 7.5m);
 
@@ -52,7 +54,7 @@ public class AssetTests
     [Fact]
     public void CalculateTotalRiskScore_MultipleVulnerabilities_ReturnsSum()
     {
-        var asset = new Asset("Firewall", "192.168.1.1");
+        var asset = new Asset("Firewall", "192.168.1.1", DummyCpe);
         asset.AddVulnerability(new Vulnerability("CVE-1", "Desc", Severity.Low, 3.5m));
         asset.AddVulnerability(new Vulnerability("CVE-2", "Desc", Severity.Medium, 5.0m));
 

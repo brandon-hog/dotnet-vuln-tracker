@@ -85,6 +85,7 @@ public class AssetRepository(AppDbContext context) : IAssetRepository
                 asset.Id,
                 asset.Hostname,
                 asset.IpAddress,
+                asset.Cpe,
                 asset.CalculateTotalRiskScore(), // Expose calculated domain logic safely
                 vulnerabilities));
         }

@@ -1,0 +1,190 @@
+@namespace Client
+@using Shared
+
+@if (IsOpen)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Build CPE</h5>
+                    <button type="button" class="btn-close" @onclick="Close" disabled="@Disabled" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Part</label>
+                            <select class="form-select" @onchange="OnPartChanged" disabled="@Disabled">
+                                @foreach (var part in Enum.GetValues<CpePart>())
+                                {
+                                    <option value="@part" selected="@(part == _draft.Part)">@part</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Language</label>
+                            <select class="form-select" @onchange="OnLanguageChanged" disabled="@Disabled">
+                                <option value="*" selected="@(_draft.Language == "*")">*</option>
+                                <option value="en-us" selected="@(_draft.Language == "en-us")">en-us</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Update</label>
+                            <input class="form-control" value="@_draft.Update" @oninput="OnUpdateChanged" disabled="@Disabled" />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Vendor</label>
+                            <input class="form-control" value="@_draft.Vendor" @oninput="OnVendorChanged" disabled="@Disabled" />
+                            <div class="form-text">Required for practical CPE matching.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Product</label>
+                            <input class="form-control" value="@_draft.Product" @oninput="OnProductChanged" disabled="@Disabled" />
+                            <div class="form-text">Required for practical CPE matching.</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Version</label>
+                            <input class="form-control" value="@_draft.Version" @oninput="OnVersionChanged" disabled="@Disabled" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Software Edition</label>
+                            <input class="form-control" value="@_draft.SwEdition" @oninput="OnSwEditionChanged" disabled="@Disabled" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Target Software</label>
+                            <input class="form-control" value="@_draft.TargetSw" @oninput="OnTargetSwChanged" disabled="@Disabled" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Target Hardware</label>
+                            <input class="form-control" value="@_draft.TargetHw" @oninput="OnTargetHwChanged" disabled="@Disabled" />
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="form-label fw-semibold">Preview</label>
+                        <code class="d-block bg-light border rounded p-2 text-break">@_draft.ToString()</code>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="Close" disabled="@Disabled">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private CPE _draft = new();
+
+    [Parameter]
+    public CPE? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<CPE> ValueChanged { get; set; }
+
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        _draft = Clone(Value);
+    }
+
+    private async Task NotifyValueChanged()
+    {
+        await ValueChanged.InvokeAsync(Clone(_draft));
+    }
+
+    private async Task OnPartChanged(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<CpePart>(args.Value?.ToString(), out var part))
+        {
+            _draft.Part = part;
+            await NotifyValueChanged();
+        }
+    }
+
+    private async Task OnLanguageChanged(ChangeEventArgs args)
+    {
+        var language = args.Value?.ToString() ?? "*";
+        _draft.Language = language;
+        await NotifyValueChanged();
+    }
+
+    private async Task OnUpdateChanged(ChangeEventArgs args)
+    {
+        _draft.Update = args.Value?.ToString() ?? string.Empty;
+        await NotifyValueChanged();
+    }
+
+    private async Task OnVendorChanged(ChangeEventArgs args)
+    {
+        _draft.Vendor = args.Value?.ToString() ?? string.Empty;
+        await NotifyValueChanged();
+    }
+
+    private async Task OnProductChanged(ChangeEventArgs args)
+    {
+        _draft.Product = args.Value?.ToString() ?? string.Empty;
+        await NotifyValueChanged();
+    }
+
+    private async Task OnVersionChanged(ChangeEventArgs args)
+    {
+        _draft.Version = args.Value?.ToString() ?? string.Empty;
+        await NotifyValueChanged();
+    }
+
+    private async Task OnSwEditionChanged(ChangeEventArgs args)
+    {
+        _draft.SwEdition = args.Value?.ToString() ?? string.Empty;
+        await NotifyValueChanged();
+    }
+
+    private async Task OnTargetSwChanged(ChangeEventArgs args)
+    {
+        _draft.TargetSw = args.Value?.ToString() ?? string.Empty;
+        await NotifyValueChanged();
+    }
+
+    private async Task OnTargetHwChanged(ChangeEventArgs args)
+    {
+        _draft.TargetHw = args.Value?.ToString() ?? string.Empty;
+        await NotifyValueChanged();
+    }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private static CPE Clone(CPE? source)
+    {
+        if (source is null)
+        {
+            return new CPE();
+        }
+
+        return new CPE
+        {
+            Part = source.Part,
+            Vendor = source.Vendor,
+            Product = source.Product,
+            Version = source.Version,
+            Update = source.Update,
+            Language = source.Language,
+            SwEdition = source.SwEdition,
+            TargetSw = source.TargetSw,
+            TargetHw = source.TargetHw
+        };
+    }
+}
