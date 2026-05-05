@@ -23,14 +23,43 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             // Tells EF Core to populate the private _vulnerabilities backing field
             // preserving Domain encapsulation principles.
             builder.Metadata.FindNavigation(nameof(Asset.Vulnerabilities))?
-                   .SetPropertyAccessMode(PropertyAccessMode.Field);
+                .SetPropertyAccessMode(PropertyAccessMode.Field);
         });
 
-        modelBuilder.Entity<Vulnerability>(builder =>
+        // Configure the Vulnerability Table
+        modelBuilder.Entity<Vulnerability>(entity =>
         {
-            builder.HasKey(v => v.CveId);
-            builder.Property(v => v.Description).IsRequired();
-            builder.Property(v => v.CvssScore).HasPrecision(4, 2); // Security precision
+            // Map Descriptions to a JSON column
+            entity.OwnsMany(v => v.Descriptions, d =>
+            {
+                d.ToJson();
+            });
+
+            // Map References to a JSON column
+            entity.OwnsMany(v => v.References, r =>
+            {
+                r.ToJson();
+            });
+
+            // Index the base score so sorting by severity is fast
+            entity.HasIndex(v => v.CvssV31BaseScore);
+        });
+
+        // Configure the CpeMatch Table
+        modelBuilder.Entity<CpeMatch>(entity =>
+        {
+            // Set up the Foreign Key constraint
+            entity.HasOne(c => c.Vulnerability)
+                  .WithMany(v => v.CpeMatches)
+                  .HasForeignKey(c => c.VulnerabilityId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // THIS IS THE MOST IMPORTANT LINE IN THE ENTIRE DATABASE
+            // Without this index, the application will crash when trying to search CPEs
+            entity.HasIndex(c => c.Criteria); 
+            
+            // A composite index for searching by CPE + Vulnerable flag
+            entity.HasIndex(c => new { c.Criteria, c.Vulnerable });
         });
     }
 }

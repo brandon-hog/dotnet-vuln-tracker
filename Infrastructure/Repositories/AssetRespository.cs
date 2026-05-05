@@ -76,10 +76,10 @@ public class AssetRepository(AppDbContext context) : IAssetRepository
         {
             var vulnerabilities = asset.Vulnerabilities.Select(v => 
                 new VulnerabilityDto(
-                    v.CveId, 
-                    v.Description, 
-                    v.Severity.ToString(), // Convert Enum to string for readable JSON
-                    v.CvssScore));
+                    v.Id, 
+                    v.Descriptions.FirstOrDefault(d => d.Lang == "en")?.Value ?? string.Empty, 
+                    v.CvssV31BaseSeverity?.ToString() ?? string.Empty, // Convert Enum to string for readable JSON
+                    v.CvssV31BaseScore ?? 0));
 
             pagedAssetDtos.Data.Add(new AssetDto(
                 asset.Id,

@@ -36,7 +36,7 @@ public sealed class Asset
     {
         ArgumentNullException.ThrowIfNull(vulnerability);
 
-        if (!_vulnerabilities.Any(v => v.CveId == vulnerability.CveId))
+        if (!_vulnerabilities.Any(v => v.Id == vulnerability.Id))
         {
             _vulnerabilities.Add(vulnerability);
         }
@@ -44,5 +44,5 @@ public sealed class Asset
 
     // Domain logic encapsulated within the entity
     public decimal CalculateTotalRiskScore() => 
-        _vulnerabilities.Sum(v => v.CvssScore);
+        _vulnerabilities.Sum(v => v.CvssV31BaseScore ?? 0);
 }
