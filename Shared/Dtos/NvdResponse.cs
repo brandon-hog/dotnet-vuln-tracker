@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Api.Dtos;
+namespace Shared.Dtos;
 
 public class NvdResponse
 {

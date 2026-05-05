@@ -3,6 +3,7 @@ using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,12 +34,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register the national vulnerability db api
-builder.Services.AddHttpClient("NvdApi", client =>
+builder.Services.AddHttpClient<NvdService>(client =>
 {
     client.BaseAddress = new Uri("https://services.nvd.nist.gov/rest/json/cves/2.0");
-    // NVD API requires a User-Agent header
     client.DefaultRequestHeaders.Add("User-Agent", "DotnetVulnTracker"); 
 });
+
+// Register the NVD service
+builder.Services.AddScoped<INvdService, NvdService>();
 
 // Register the background worker to sync the db
 builder.Services.AddHostedService<Api.Workers.CveSyncWorker>();
