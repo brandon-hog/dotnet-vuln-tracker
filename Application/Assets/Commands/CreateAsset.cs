@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Application.Assets.Commands;
 
-public record CreateAssetCommand(string Hostname, string IpAddress) : IRequest<Guid>;
+public record CreateAssetCommand(string Hostname, string IpAddress, string Cpe) : IRequest<Guid>;
 
 public class CreateAssetCommandHandler(IAssetRepository repository) 
     : IRequestHandler<CreateAssetCommand, Guid>
@@ -12,7 +12,7 @@ public class CreateAssetCommandHandler(IAssetRepository repository)
     public async Task<Guid> Handle(CreateAssetCommand request, CancellationToken cancellationToken)
     {
         // Instantiate the Domain entity (enforcing validation rules)
-        var asset = new Asset(request.Hostname, request.IpAddress);
+        var asset = new Asset(request.Hostname, request.IpAddress, request.Cpe);
         
         // Persist via Infrastructure
         await repository.AddAsync(asset, cancellationToken);

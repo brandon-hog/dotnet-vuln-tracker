@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Application.Assets.Commands;
 
-public record UpdateAssetCommand(Guid Id, string Hostname, string IpAddress) : IRequest<bool>;
+public record UpdateAssetCommand(Guid Id, string Hostname, string IpAddress, string Cpe) : IRequest<bool>;
 
 public class UpdateAssetCommandHandler(IAssetRepository repository)
     : IRequestHandler<UpdateAssetCommand, bool>
@@ -17,7 +17,7 @@ public class UpdateAssetCommandHandler(IAssetRepository repository)
             return false;
         }
 
-        asset.UpdateDetails(request.Hostname, request.IpAddress);
+        asset.UpdateDetails(request.Hostname, request.IpAddress, request.Cpe);
         await repository.UpdateAsync(asset, cancellationToken);
         return true;
     }
