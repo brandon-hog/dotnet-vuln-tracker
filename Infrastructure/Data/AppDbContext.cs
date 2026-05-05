@@ -9,6 +9,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
 {
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<Vulnerability> Vulnerabilities => Set<Vulnerability>();
+    public DbSet<CpeMatch> CpeMatches => Set<CpeMatch>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
