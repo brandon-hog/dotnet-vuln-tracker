@@ -10,6 +10,9 @@ namespace Api.Workers;
 ///  Grabs the first 10 vulnerabilties, and checks if any of the assets
 ///  have a matching keyword in the CVE description from their hostname.
 ///  If so, it assigns the asset to the vulnerability. 
+/// 
+///  CPE string format:
+///  pe:2.3:part:vendor:product:version:update:edition:language:sw_edition:target_sw:target_hw:other
 /// </summary>
 public class CveSyncWorker(IServiceScopeFactory scopeFactory, ILogger<CveSyncWorker> logger) : BackgroundService
 {

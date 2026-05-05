@@ -11,4 +11,8 @@ public class UpdateAssetDto
     [Required(ErrorMessage = "IP Address is required.")]
     [RegularExpression(@"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$", ErrorMessage = "Must be a valid IPv4 address.")]
     public string IpAddress { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "CPE is required.")]
+    [RegularExpression(@"^cpe:2\.3:[aho](?::(?:[a-zA-Z0-9\._\-~%]|\\:|\*|\?)*){10}$", ErrorMessage = "Must be a valid CPE.")]
+    public string Cpe { get; set; } = string.Empty;
 }
