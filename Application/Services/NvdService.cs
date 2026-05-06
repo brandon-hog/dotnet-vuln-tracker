@@ -2,45 +2,109 @@ namespace Application.Services;
 
 using Application.Interfaces;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Shared.Dtos;
+using Domain.Entities;
 
-public class NvdService(HttpClient httpClient) : INvdService
+public class NvdService(HttpClient httpClient, IVulnerabilityRepository vulnerabilityRepository) : INvdService
 {
-    // TODO Initialize the database with the NVD data
-    public async Task InitializeDatabase() {
-        int startIndex = 0;
-        int resultsPerPage = 2000;
-        bool hasMoreData = true;
+    private Vulnerability MapNvdResponseToVulnerability(NvdVulnerabilityWrapper nvdVulnerability)
+    {
+        var cve = nvdVulnerability.Cve;
+        var v31 = cve.Metrics?.CvssMetricV31?.FirstOrDefault()?.CvssData;
 
-        while (hasMoreData)
+        return new Vulnerability
         {
-            // 1. Build the paginated URL
-            var url = $"https://services.nvd.nist.gov/rest/json/cves/2.0/?resultsPerPage={resultsPerPage}&startIndex={startIndex}";
-            
-            // 2. Fetch the chunk of 2,000 CVEs
+            Id = cve.Id,
+            Published = cve.Published,
+            LastModified = cve.LastModified,
+            VulnStatus = cve.VulnStatus,
+
+            CvssV31BaseScore = v31?.BaseScore,
+            CvssV31BaseSeverity = v31?.BaseSeverity,
+
+            Descriptions = cve.Descriptions
+                .Select(d => new Domain.Entities.CveDescription
+                {
+                    Lang = d.Lang,
+                    Value = d.Value,
+                })
+                .ToList(),
+
+            References = cve.References
+                .Select(r => new Domain.Entities.CveReference
+                {
+                    Url = r.Url,
+                    Source = r.Source,
+                })
+                .ToList(),
+
+            RawMetricsJson = cve.Metrics is null
+                ? null
+                : JsonSerializer.Serialize(cve.Metrics),
+
+            CpeMatches = cve.Configurations
+                .SelectMany(c => c.Nodes)
+                .SelectMany(n => n.CpeMatch)
+                .Select(m => new CpeMatch
+                {
+                    Criteria = m.Criteria,
+                    MatchCriteriaId = m.MatchCriteriaId,
+                    Vulnerable = m.Vulnerable,
+                })
+                .ToList(),
+        };
+    }
+
+    private async Task FetchAndUpsertPagesAsync(string extraQueryParams)
+    {
+        int startIndex = 0;
+        const int resultsPerPage = 2000;
+        int totalResults = int.MaxValue;
+
+        while (startIndex < totalResults)
+        {
+            var url = $"https://services.nvd.nist.gov/rest/json/cves/2.0/?resultsPerPage={resultsPerPage}&startIndex={startIndex}{extraQueryParams}";
+
             var response = await httpClient.GetAsync(url);
-            var data = await response.Content.ReadFromJsonAsync<NvdResponse>();
-            
-            // 3. Save this chunk to your local database here...
-            //SaveToDatabase(data.Vulnerabilities);
-            
-            // 4. Check if we've reached the end
-            if (startIndex + resultsPerPage >= data.TotalResults)
+            response.EnsureSuccessStatusCode();
+
+            var data = await response.Content.ReadFromJsonAsync<NvdResponse>()
+                       ?? throw new InvalidOperationException("NVD returned an empty response.");
+
+            totalResults = data.TotalResults;
+
+            var entities = data.Vulnerabilities
+                .Select(MapNvdResponseToVulnerability)
+                .ToList();
+
+            if (entities.Count > 0)
             {
-                hasMoreData = false;
+                await vulnerabilityRepository.BulkUpsertAsync(entities);
             }
-            else
+
+            startIndex += resultsPerPage;
+
+            if (startIndex < totalResults)
             {
-                // Move the index forward for the next page
-                startIndex += resultsPerPage;
-                
-                // 5. THE CRITICAL STEP: Sleep to respect the rate limit
-                // Sleep for 6 seconds (ensures you never exceed 5 requests per 30s)
-                await Task.Delay(6000); 
+                // Stay below the 5-requests-per-30s anonymous NVD quota.
+                await Task.Delay(TimeSpan.FromSeconds(6));
             }
         }
     }
 
-    // TODO Update the database with data recently modified within 24 hours
-    public async Task UpdateDatabase() {}
+    public Task InitializeDatabase() => FetchAndUpsertPagesAsync(extraQueryParams: string.Empty);
+
+    public Task UpdateDatabase()
+    {
+        var end = DateTime.UtcNow;
+        var start = end.AddHours(-24);
+
+        static string Format(DateTime dt) => dt.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+
+        var qs = $"&lastModStartDate={Uri.EscapeDataString(Format(start))}" +
+                 $"&lastModEndDate={Uri.EscapeDataString(Format(end))}";
+
+        return FetchAndUpsertPagesAsync(qs);
+    }
 }

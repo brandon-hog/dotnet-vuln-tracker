@@ -1,6 +1,6 @@
-using System.Text.Json.Serialization;
-
 namespace Shared.Dtos;
+
+using System.Text.Json.Serialization;
 
 public class NvdResponse
 {
@@ -52,6 +52,45 @@ public class CveItem
     // Nullable because newly published CVEs often do not have CVSS scores assigned yet
     [JsonPropertyName("metrics")]
     public CveMetrics? Metrics { get; set; } 
+
+    [JsonPropertyName("references")]
+    public List<NvdReference> References { get; set; } = [];
+
+    [JsonPropertyName("configurations")]
+    public List<NvdConfiguration> Configurations { get; set; } = [];
+}
+
+public class NvdReference
+{
+    [JsonPropertyName("url")]
+    public string Url { get; set; } = string.Empty;
+
+    [JsonPropertyName("source")]
+    public string? Source { get; set; }
+}
+
+public class NvdConfiguration
+{
+    [JsonPropertyName("nodes")]
+    public List<NvdNode> Nodes { get; set; } = [];
+}
+
+public class NvdNode
+{
+    [JsonPropertyName("cpeMatch")]
+    public List<NvdCpeMatch> CpeMatch { get; set; } = [];
+}
+
+public class NvdCpeMatch
+{
+    [JsonPropertyName("vulnerable")]
+    public bool Vulnerable { get; set; }
+
+    [JsonPropertyName("criteria")]
+    public string Criteria { get; set; } = string.Empty;
+
+    [JsonPropertyName("matchCriteriaId")]
+    public string MatchCriteriaId { get; set; } = string.Empty;
 }
 
 public class CveDescription

@@ -1,9 +1,12 @@
+using System.Net;
 using Application.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Application.Services;
+using Polly;
+using Polly.Extensions.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,9 +39,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Register the national vulnerability db api
 builder.Services.AddHttpClient<NvdService>(client =>
 {
-    client.BaseAddress = new Uri("https://services.nvd.nist.gov/rest/json/cves/2.0");
-    client.DefaultRequestHeaders.Add("User-Agent", "DotnetVulnTracker"); 
-});
+    client.BaseAddress = new Uri("https://services.nvd.nist.gov/rest/json/cves/2.0/");
+    client.DefaultRequestHeaders.Add("User-Agent", "DotnetVulnTracker");
+    client.Timeout = TimeSpan.FromSeconds(60);
+})
+.AddPolicyHandler(HttpPolicyExtensions
+    .HandleTransientHttpError()
+    .OrResult(r => r.StatusCode == HttpStatusCode.TooManyRequests)
+    .WaitAndRetryAsync(
+        retryCount: 5,
+        sleepDurationProvider: attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt))));
 
 // Register the NVD service
 builder.Services.AddScoped<INvdService, NvdService>();
@@ -48,6 +58,9 @@ builder.Services.AddHostedService<Api.Workers.CveSyncWorker>();
 
 // Register Repository (AddScoped = one instance per HTTP request)
 builder.Services.AddScoped<IAssetRepository, AssetRepository>();
+
+// Register Repository (AddScoped = one instance per HTTP request)
+builder.Services.AddScoped<IVulnerabilityRepository, VulnerabilityRepository>();
 
 // Add endpoint explorer to discover minimal apis (identity core)
 builder.Services.AddEndpointsApiExplorer();
