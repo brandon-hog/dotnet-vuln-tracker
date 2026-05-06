@@ -42,6 +42,17 @@ public sealed class Asset
         }
     }
 
+    public void ReplaceVulnerabilities(IEnumerable<Vulnerability> vulnerabilities)
+    {
+        ArgumentNullException.ThrowIfNull(vulnerabilities);
+
+        _vulnerabilities.Clear();
+        foreach (var v in vulnerabilities.DistinctBy(v => v.Id))
+        {
+            _vulnerabilities.Add(v);
+        }
+    }
+
     // Domain logic encapsulated within the entity
     public decimal CalculateTotalRiskScore() => 
         _vulnerabilities.Sum(v => v.CvssV31BaseScore ?? 0);

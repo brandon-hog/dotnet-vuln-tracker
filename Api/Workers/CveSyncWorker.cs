@@ -51,6 +51,8 @@ public class CveSyncWorker(IServiceScopeFactory scopeFactory, ILogger<CveSyncWor
             logger.LogInformation("NVD delta update completed.");
         }
 
-        // TODO update the assets with the latest vulnerabilities
+        logger.LogInformation("Recomputing asset-vulnerability correlations...");
+        await assetRepository.SyncAssetVulnerabilitiesAsync(cancellationToken);
+        logger.LogInformation("Asset-vulnerability correlation completed.");
     }
 }

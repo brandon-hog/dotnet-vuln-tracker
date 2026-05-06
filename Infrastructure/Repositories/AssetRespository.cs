@@ -41,6 +41,49 @@ public class AssetRepository(AppDbContext context) : IAssetRepository
         await context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task SyncAssetVulnerabilitiesAsync(CancellationToken cancellationToken = default)
+    {
+        var assets = await context.Assets
+            .Include(a => a.Vulnerabilities)
+            .ToListAsync(cancellationToken);
+
+        if (assets.Count == 0) return;
+
+        var cpes = assets
+            .Select(a => a.Cpe)
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Distinct()
+            .ToList();
+
+        if (cpes.Count == 0)
+        {
+            foreach (var asset in assets) asset.ReplaceVulnerabilities([]);
+            await context.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
+        var matches = await context.CpeMatches
+            .Where(c => c.Vulnerable && cpes.Contains(c.Criteria))
+            .Select(c => new { c.Criteria, c.Vulnerability })
+            .ToListAsync(cancellationToken);
+
+        var vulnsByCpe = matches
+            .GroupBy(m => m.Criteria)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(x => x.Vulnerability).DistinctBy(v => v.Id).ToList());
+
+        foreach (var asset in assets)
+        {
+            var matched = vulnsByCpe.TryGetValue(asset.Cpe ?? string.Empty, out var list)
+                ? (IEnumerable<Vulnerability>)list
+                : Array.Empty<Vulnerability>();
+            asset.ReplaceVulnerabilities(matched);
+        }
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<PagedResponse<AssetDto>> GetPagedAssets(PaginationFilter paginationFilter, CancellationToken cancellationToken)
     {
         var query = context.Assets.AsQueryable();
