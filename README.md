@@ -171,3 +171,9 @@ Current tests focus on domain behavior (asset creation, vulnerability handling, 
 
 - This is a portfolio demo with intentionally simplified CVE correlation logic in the background worker.
 - For production hardening, next steps would include richer matching heuristics, deeper test coverage across application/infrastructure layers, and deployment automation.
+
+## Limitations
+
+- **Exact CPE matching only:** vulnerability correlation currently uses exact string equality (`CpeMatches.Criteria == Asset.Cpe`).
+- **No wildcard/range semantics yet:** CPE wildcard fields (such as `*`) and version range logic are not yet interpreted during matching.
+- **Practical impact:** this may miss real matches or include imprecise matches compared with full NVD CPE applicability evaluation.
