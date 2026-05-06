@@ -1,8 +1,4 @@
-using System.Text.Json;
-using Shared.Dtos;
 using Application.Interfaces;
-using Domain.Entities;
-using Domain.Enums;
 
 namespace Api.Workers;
 
@@ -38,34 +34,23 @@ public class CveSyncWorker(IServiceScopeFactory scopeFactory, ILogger<CveSyncWor
     private async Task FetchAndStoreCvesAsync(CancellationToken cancellationToken)
     {
         using var scope = scopeFactory.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IAssetRepository>();
+        var assetRepository = scope.ServiceProvider.GetRequiredService<IAssetRepository>();
+        var vulnerabilityRepository = scope.ServiceProvider.GetRequiredService<IVulnerabilityRepository>();
         var nvdService = scope.ServiceProvider.GetRequiredService<INvdService>();
 
-        // TODO figure out when to seed the database with the NVD data
+        if (!await vulnerabilityRepository.AnyAsync())
+        {
+            logger.LogInformation("Vulnerability table is empty. Seeding from NVD...");
+            await nvdService.InitializeDatabase();
+            logger.LogInformation("Initial NVD seed completed.");
+        }
+        else
+        {
+            logger.LogInformation("Performing 24-hour NVD delta update...");
+            await nvdService.UpdateDatabase();
+            logger.LogInformation("NVD delta update completed.");
+        }
 
-        // TODO Update the database with the latest vulnerabilities
-        await nvdService.UpdateDatabase();
-        
         // TODO update the assets with the latest vulnerabilities
-        
-    }
-
-    private static Severity MapSeverity(string? nvdSeverity) => nvdSeverity?.ToUpperInvariant() switch
-    {
-        "LOW" => Severity.Low,
-        "MEDIUM" => Severity.Medium,
-        "HIGH" => Severity.High,
-        "CRITICAL" => Severity.Critical,
-        _ => Severity.Low // Default fallback for unassigned/null severities
-    };
-
-    private static bool IsAssetVulnerable(Asset asset, string cveDescription)
-    {
-        if (string.IsNullOrWhiteSpace(asset.Hostname) || string.IsNullOrWhiteSpace(cveDescription)) 
-            return false;
-        
-        // Simulated Correlation: Flags if the asset hostname parts exist in the CVE description
-        var keywords = asset.Hostname.Split('-');
-        return keywords.Any(k => cveDescription.Contains(k, StringComparison.OrdinalIgnoreCase));
     }
 }
