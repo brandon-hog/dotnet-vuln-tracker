@@ -31,13 +31,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
         modelBuilder.Entity<Vulnerability>(entity =>
         {
             // Map Descriptions to a JSON column
-            entity.OwnsMany(v => v.Descriptions, d =>
+            entity.ComplexCollection(v => v.Descriptions, d =>
             {
                 d.ToJson();
             });
 
             // Map References to a JSON column
-            entity.OwnsMany(v => v.References, r =>
+            entity.ComplexCollection(v => v.References, r =>
             {
                 r.ToJson();
             });
