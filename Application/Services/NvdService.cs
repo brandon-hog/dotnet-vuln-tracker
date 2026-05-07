@@ -32,7 +32,7 @@ public class NvdService(HttpClient httpClient, IVulnerabilityRepository vulnerab
             VulnStatus = cve.VulnStatus,
 
             BaseScore = cvssData?.BaseScore,
-            BaseSeverity = cvssData?.BaseSeverity,
+            BaseSeverity = baseSeverity,
 
             Descriptions = cve.Descriptions
                 .Select(d => new Domain.Entities.CveDescription
