@@ -121,8 +121,8 @@ public class AssetRepository(AppDbContext context) : IAssetRepository
                 new VulnerabilityDto(
                     v.Id, 
                     v.Descriptions.FirstOrDefault(d => d.Lang == "en")?.Value ?? string.Empty, 
-                    v.CvssV31BaseSeverity?.ToString() ?? string.Empty, // Convert Enum to string for readable JSON
-                    v.CvssV31BaseScore ?? 0));
+                    v.BaseSeverity?.ToString() ?? string.Empty, // Convert Enum to string for readable JSON
+                    v.BaseScore ?? 0));
 
             pagedAssetDtos.Data.Add(new AssetDto(
                 asset.Id,

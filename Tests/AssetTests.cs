@@ -11,8 +11,8 @@ public class AssetTests
         {
             Id = id,
             VulnStatus = "Analyzed",
-            CvssV31BaseScore = score,
-            CvssV31BaseSeverity = severity,
+            BaseScore = score,
+            BaseSeverity = severity,
         };
 
     [Fact]

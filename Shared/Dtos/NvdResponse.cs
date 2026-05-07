@@ -107,6 +107,10 @@ public class CveMetrics
     // NVD categorizes metrics by version. V3.1 is the modern standard
     [JsonPropertyName("cvssMetricV31")]
     public List<CvssMetricV31>? CvssMetricV31 { get; set; }
+
+    // Support V 3.2 for legacy 
+    [JsonPropertyName("cvssMetricV2")]
+    public List<CvssMetricV2>? CvssMetricV2 { get; set; }
 }
 
 public class CvssMetricV31
@@ -114,6 +118,16 @@ public class CvssMetricV31
     [JsonPropertyName("cvssData")]
     public CvssData CvssData { get; set; } = new();
 }
+
+public class CvssMetricV2
+{
+    [JsonPropertyName("cvssData")]
+    public CvssData CvssData { get; set; } = new();
+
+    [JsonPropertyName("baseSeverity")]
+    public string BaseSeverity { get; set; } = string.Empty;
+}
+
 
 public class CvssData
 {

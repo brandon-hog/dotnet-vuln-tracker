@@ -55,5 +55,5 @@ public sealed class Asset
 
     // Domain logic encapsulated within the entity
     public decimal CalculateTotalRiskScore() => 
-        _vulnerabilities.Sum(v => v.CvssV31BaseScore ?? 0);
+        _vulnerabilities.Sum(v => v.BaseScore ?? 0);
 }

@@ -43,7 +43,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             });
 
             // Index the base score so sorting by severity is fast
-            entity.HasIndex(v => v.CvssV31BaseScore);
+            entity.HasIndex(v => v.BaseScore);
         });
 
         // Configure the CpeMatch Table

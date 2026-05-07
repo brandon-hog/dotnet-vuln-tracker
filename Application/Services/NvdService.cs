@@ -11,7 +11,18 @@ public class NvdService(HttpClient httpClient, IVulnerabilityRepository vulnerab
     private Vulnerability MapNvdResponseToVulnerability(NvdVulnerabilityWrapper nvdVulnerability)
     {
         var cve = nvdVulnerability.Cve;
-        var v31 = cve.Metrics?.CvssMetricV31?.FirstOrDefault()?.CvssData;
+
+        // Try 3.1 first, if not available fallback on v2
+        var cvssData = cve.Metrics?.CvssMetricV31?.FirstOrDefault()?.CvssData;
+
+        // In v2 severity is outside cvssdata, but otherwise it is inside
+        var baseSeverity = cvssData?.BaseSeverity;
+
+        if (cvssData is null)
+        {
+            cvssData = cve.Metrics?.CvssMetricV2?.FirstOrDefault()?.CvssData;
+            baseSeverity = cve.Metrics?.CvssMetricV2?.FirstOrDefault()?.BaseSeverity;
+        }
 
         return new Vulnerability
         {
@@ -20,8 +31,8 @@ public class NvdService(HttpClient httpClient, IVulnerabilityRepository vulnerab
             LastModified = cve.LastModified,
             VulnStatus = cve.VulnStatus,
 
-            CvssV31BaseScore = v31?.BaseScore,
-            CvssV31BaseSeverity = v31?.BaseSeverity,
+            BaseScore = cvssData?.BaseScore,
+            BaseSeverity = cvssData?.BaseSeverity,
 
             Descriptions = cve.Descriptions
                 .Select(d => new Domain.Entities.CveDescription

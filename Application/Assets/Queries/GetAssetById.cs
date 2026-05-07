@@ -22,8 +22,8 @@ public class GetAssetByIdQueryHandler(IAssetRepository repository)
             new VulnerabilityDto(
                 v.Id, 
                 v.Descriptions.FirstOrDefault(d => d.Lang == "en")?.Value ?? string.Empty, 
-                v.CvssV31BaseSeverity?.ToString() ?? string.Empty,
-                v.CvssV31BaseScore ?? 0));
+                v.BaseSeverity?.ToString() ?? string.Empty,
+                v.BaseScore ?? 0));
 
         return new AssetDto(
             asset.Id,
