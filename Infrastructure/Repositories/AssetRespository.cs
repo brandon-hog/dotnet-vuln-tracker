@@ -84,6 +84,34 @@ public class AssetRepository(AppDbContext context) : IAssetRepository
         await context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task SyncAssetByIdVulnerabilitiesAsync(Guid assetId, CancellationToken cancellationToken = default)
+    {
+        var asset = await context.Assets
+            .Include(a => a.Vulnerabilities)
+            .FirstOrDefaultAsync(a => a.Id == assetId, cancellationToken);
+
+        if (asset is null) return;
+
+        if (string.IsNullOrWhiteSpace(asset.Cpe))
+        {
+            asset.ReplaceVulnerabilities([]);
+            await context.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
+        var matches = await context.CpeMatches
+            .Where(c => c.Vulnerable && asset.Cpe == c.Criteria)
+            .Select(c => c.Vulnerability)
+            .ToListAsync(cancellationToken);
+
+        var vulnsByCpe = matches
+            .DistinctBy(v => v.Id).ToList();
+
+        asset.ReplaceVulnerabilities(vulnsByCpe);
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<PagedResponse<AssetDto>> GetPagedAssets(PaginationFilter paginationFilter, CancellationToken cancellationToken)
     {
         var query = context.Assets.AsQueryable();
