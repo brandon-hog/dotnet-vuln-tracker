@@ -19,6 +19,7 @@ public class UpdateAssetCommandHandler(IAssetRepository repository)
 
         asset.UpdateDetails(request.Hostname, request.IpAddress, request.Cpe);
         await repository.UpdateAsync(asset, cancellationToken);
+        await repository.SyncAssetByIdVulnerabilitiesAsync(request.Id, cancellationToken);
         return true;
     }
 }
