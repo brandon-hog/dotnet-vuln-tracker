@@ -5,12 +5,13 @@ public sealed class Asset
     public Guid Id { get; private set; }
     public string Hostname { get; private set; }
     public string IpAddress { get; private set; }
+    public string Cpe { get; private set; }
     
     // Prevent external code from directly modifying the list
     private readonly List<Vulnerability> _vulnerabilities = [];
     public IReadOnlyCollection<Vulnerability> Vulnerabilities => _vulnerabilities.AsReadOnly();
 
-    public Asset(string hostname, string ipAddress)
+    public Asset(string hostname, string ipAddress, string cpe)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(hostname);
         ArgumentException.ThrowIfNullOrWhiteSpace(ipAddress);
@@ -18,28 +19,41 @@ public sealed class Asset
         Id = Guid.NewGuid();
         Hostname = hostname;
         IpAddress = ipAddress;
+        Cpe = cpe;
     }
 
-    public void UpdateDetails(string hostname, string ipAddress)
+    public void UpdateDetails(string hostname, string ipAddress, string cpe)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(hostname);
         ArgumentException.ThrowIfNullOrWhiteSpace(ipAddress);
 
         Hostname = hostname;
         IpAddress = ipAddress;
+        Cpe = cpe;
     }
 
     public void AddVulnerability(Vulnerability vulnerability)
     {
         ArgumentNullException.ThrowIfNull(vulnerability);
 
-        if (!_vulnerabilities.Any(v => v.CveId == vulnerability.CveId))
+        if (!_vulnerabilities.Any(v => v.Id == vulnerability.Id))
         {
             _vulnerabilities.Add(vulnerability);
         }
     }
 
+    public void ReplaceVulnerabilities(IEnumerable<Vulnerability> vulnerabilities)
+    {
+        ArgumentNullException.ThrowIfNull(vulnerabilities);
+
+        _vulnerabilities.Clear();
+        foreach (var v in vulnerabilities.DistinctBy(v => v.Id))
+        {
+            _vulnerabilities.Add(v);
+        }
+    }
+
     // Domain logic encapsulated within the entity
     public decimal CalculateTotalRiskScore() => 
-        _vulnerabilities.Sum(v => v.CvssScore);
+        _vulnerabilities.Sum(v => v.BaseScore ?? 0);
 }

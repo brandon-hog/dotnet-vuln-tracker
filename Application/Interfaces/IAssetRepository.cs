@@ -11,4 +11,6 @@ public interface IAssetRepository
     Task DeleteAsync(Asset asset, CancellationToken cancellationToken = default);
     Task UpdateAsync(Asset asset, CancellationToken cancellationToken = default);
     Task<PagedResponse<AssetDto>> GetPagedAssets(PaginationFilter paginationFilter, CancellationToken cancellationToken = default);
+    Task SyncAssetByIdVulnerabilitiesAsync(Guid assetId, CancellationToken cancellationToken = default);
+    Task SyncAssetVulnerabilitiesAsync(CancellationToken cancellationToken = default);
 }

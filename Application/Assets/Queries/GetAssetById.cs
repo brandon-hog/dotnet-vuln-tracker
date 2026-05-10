@@ -20,15 +20,16 @@ public class GetAssetByIdQueryHandler(IAssetRepository repository)
 
         var vulnerabilities = asset.Vulnerabilities.Select(v => 
             new VulnerabilityDto(
-                v.CveId, 
-                v.Description, 
-                v.Severity.ToString(), // Convert Enum to string for readable JSON
-                v.CvssScore));
+                v.Id, 
+                v.Descriptions.FirstOrDefault(d => d.Lang == "en")?.Value ?? string.Empty, 
+                v.BaseSeverity?.ToString() ?? string.Empty,
+                v.BaseScore ?? 0));
 
         return new AssetDto(
             asset.Id,
             asset.Hostname,
             asset.IpAddress,
+            asset.Cpe,
             asset.CalculateTotalRiskScore(), // Expose calculated domain logic safely
             vulnerabilities);
     }

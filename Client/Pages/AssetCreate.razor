@@ -2,6 +2,7 @@
 @using Client.Layout
 @using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
+@using Shared
 @using Shared.Dtos
 @layout MainLayout
 @attribute [Authorize]
@@ -44,6 +45,17 @@
                             <ValidationMessage For="@(() => _asset.IpAddress)" class="text-danger small mt-1" />
                         </div>
 
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">CPE</label>
+                            <div class="input-group">
+                                <InputText class="form-control" @bind-Value="_asset.Cpe" readonly />
+                                <button type="button" class="btn btn-outline-dark" @onclick="OpenCpeModal" disabled="@_isSubmitting">
+                                    Build/Edit CPE
+                                </button>
+                            </div>
+                            <ValidationMessage For="@(() => _asset.Cpe)" class="text-danger small mt-1" />
+                        </div>
+
                         <div class="d-flex justify-content-end gap-2">
                             <button type="button" class="btn btn-light" @onclick="NavigateBack" disabled="@_isSubmitting">Cancel</button>
                             <button type="submit" class="btn btn-dark" disabled="@_isSubmitting">
@@ -66,15 +78,22 @@
     </div>
 </div>
 
+<CpeModal @bind-Value="_cpeModel" IsOpen="@_isCpeModalOpen" OnClose="CloseCpeModal" Disabled="@_isSubmitting" />
+
 @code {
     private CreateAssetDto _asset = new();
+    private CPE _cpeModel = new();
     private bool _isSubmitting = false;
+    private bool _isCpeModalOpen = false;
     private string? _errorMessage;
 
     private async Task HandleValidSubmitAsync()
     {
         _isSubmitting = true;
         _errorMessage = null;
+
+        // Convert the modal's CPE object back into the string expected by the API.
+        _asset.Cpe = _cpeModel.ToString();
 
         try
         {
@@ -130,10 +149,32 @@
         // Standard networking regex to enforce valid IPv4 structural formatting before the API is hit
         [RegularExpression(@"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$", ErrorMessage = "Must be a valid IPv4 address.")]
         public string IpAddress { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "CPE is required.")]
+        [RegularExpression(@"^cpe:2\.3:[aho](?::(?:[a-zA-Z0-9\._\-~%]|\\:|\*|\?)*){10}$", ErrorMessage = "Must be a valid CPE.")]
+        public string Cpe { get; set; } = string.Empty;
     }
 
     private class ValidationProblemDetails
     {
         public Dictionary<string, string[]> Errors { get; set; } = new();
+    }
+
+    protected override void OnInitialized()
+    {
+        // Seed so the form starts in a valid state (modal can refine later).
+        _asset.Cpe = _cpeModel.ToString();
+    }
+
+    private void OpenCpeModal()
+    {
+        _isCpeModalOpen = true;
+    }
+
+    private Task CloseCpeModal()
+    {
+        _asset.Cpe = _cpeModel.ToString();
+        _isCpeModalOpen = false;
+        return Task.CompletedTask;
     }
 }
