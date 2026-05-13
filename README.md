@@ -115,9 +115,10 @@ Client URL (dev): `http://localhost:5199`
 - **Vulnerability visibility**
   - Asset detail page with vulnerability list, severity badges, and CVSS scores.
   - Risk score calculation encapsulated in the domain entity.
-- **Background CVE ingestion**
-  - Hosted worker fetches vulnerability data from the NVD API on a schedule.
-  - Demo correlation logic flags assets when hostname keywords appear in CVE descriptions.
+- **Background CVE ingestion and CPE correlation**
+  - Hosted worker (`CveSyncWorker`) runs on a 24-hour timer: if the vulnerability store is empty it performs an initial NVD seed; otherwise it runs a delta update.
+  - After NVD data is updated, it recomputes asset–vulnerability links by matching each asset’s CPE string to NVD CPE match criteria (`CpeMatches`), using exact equality on criteria for rows marked vulnerable.
+  - Updating an asset through the API also triggers a per-asset correlation pass for that record’s CPE.
 - **Developer experience**
   - Swagger for API exploration.
   - Unit tests for domain model behaviors.
@@ -168,11 +169,12 @@ Current tests focus on domain behavior (asset creation, vulnerability handling, 
 
 ## Notes
 
-- This is a portfolio demo with intentionally simplified CVE correlation logic in the background worker.
+- This is a portfolio demo; correlation uses exact CPE string matching against stored NVD CPE match rows (see **Limitations** below), not hostname or CVE description text.
 - For production hardening, next steps would include richer matching heuristics, deeper test coverage across application/infrastructure layers, and deployment automation.
 
 ## Limitations
 
-- **Exact CPE matching only:** vulnerability correlation currently uses exact string equality (`CpeMatches.Criteria == Asset.Cpe`).
+- **Initial NVD seed has no resume checkpoint:** full import progress (for example `startIndex` in `NvdService`) is not persisted. If the app stops mid-seed, the next worker cycle does not continue from where it stopped. After any vulnerabilities are stored, the worker treats the store as initialized and runs **24-hour delta** updates only, so a failed first-time seed may never automatically finish the historical backfill without manual intervention (for example clearing vulnerability data or adding explicit resume logic).
+- **Delta sync can miss changes after downtime:** each scheduled update queries NVD for CVEs modified in roughly the **last 24 hours** (relative to the run). There is **no stored watermark** of the last successful delta. If the app is off longer than that window, modifications that occurred while it was down are not automatically backfilled by the next delta run.
 - **No wildcard/range semantics yet:** CPE wildcard fields (such as `*`) and version range logic are not yet interpreted during matching.
 - **Practical impact:** this may miss real matches or include imprecise matches compared with full NVD CPE applicability evaluation.
