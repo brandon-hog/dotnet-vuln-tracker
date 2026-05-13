@@ -1,3 +1,4 @@
+using Application.Interfaces;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -5,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<IdentityUser>(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser currentUser) : IdentityDbContext<IdentityUser>(options)
 {
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<Vulnerability> Vulnerabilities => Set<Vulnerability>();
@@ -25,6 +26,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             // preserving Domain encapsulation principles.
             builder.Metadata.FindNavigation(nameof(Asset.Vulnerabilities))?
                 .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+            builder.HasQueryFilter(a => a.OwnerId == currentUser.Id);
         });
 
         // Configure the Vulnerability Table

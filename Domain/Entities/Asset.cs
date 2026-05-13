@@ -6,6 +6,7 @@ public sealed class Asset
     public string Hostname { get; private set; }
     public string IpAddress { get; private set; }
     public string Cpe { get; private set; }
+    public string OwnerId { get; private set; }
     
     // Prevent external code from directly modifying the list
     private readonly List<Vulnerability> _vulnerabilities = [];

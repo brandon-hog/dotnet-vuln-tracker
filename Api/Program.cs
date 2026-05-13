@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Application.Services;
 using Polly;
 using Polly.Extensions.Http;
+using Api.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +46,12 @@ builder.Services.AddHttpClient<NvdService>(client =>
     .WaitAndRetryAsync(
         retryCount: 5,
         sleepDurationProvider: attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt))));
+
+// Register the HttpAccessor
+builder.Services.AddHttpContextAccessor();
+
+// Register the CurrentUser service
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
 // Register the NVD service
 builder.Services.AddScoped<INvdService, NvdService>();
