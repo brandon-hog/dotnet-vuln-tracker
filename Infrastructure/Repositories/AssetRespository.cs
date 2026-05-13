@@ -43,7 +43,9 @@ public class AssetRepository(AppDbContext context) : IAssetRepository
 
     public async Task SyncAssetVulnerabilitiesAsync(CancellationToken cancellationToken = default)
     {
+        // Background jobs have no HttpContext; global OwnerId filter would otherwise match nothing.
         var assets = await context.Assets
+            .IgnoreQueryFilters()
             .Include(a => a.Vulnerabilities)
             .ToListAsync(cancellationToken);
 
