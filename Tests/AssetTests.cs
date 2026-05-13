@@ -18,7 +18,7 @@ public class AssetTests
     [Fact]
     public void Constructor_ValidInputs_CreatesAsset()
     {
-        var asset = new Asset("Web-Server-01", "192.168.1.10", DummyCpe);
+        var asset = new Asset("Web-Server-01", "192.168.1.10", DummyCpe, "test-owner-id");
 
         Assert.NotEqual(Guid.Empty, asset.Id);
         Assert.Equal("Web-Server-01", asset.Hostname);
@@ -31,13 +31,13 @@ public class AssetTests
     [InlineData(" ", "192.168.1.10")]
     public void Constructor_InvalidHostname_ThrowsArgumentException(string invalidHostname, string ip)
     {
-        Assert.ThrowsAny<ArgumentException>(() => new Asset(invalidHostname, ip, DummyCpe));
+        Assert.ThrowsAny<ArgumentException>(() => new Asset(invalidHostname, ip, DummyCpe, "test-owner-id"));
     }
 
     [Fact]
     public void AddVulnerability_NewCve_AddsToCollection()
     {
-        var asset = new Asset("Db-Server", "10.0.0.5", DummyCpe);
+        var asset = new Asset("Db-Server", "10.0.0.5", DummyCpe, "test-owner-id");
         var vuln = MakeVuln("CVE-2024-1234", 9.8m, "CRITICAL");
 
         asset.AddVulnerability(vuln);
@@ -49,7 +49,7 @@ public class AssetTests
     [Fact]
     public void AddVulnerability_DuplicateCve_DoesNotAddTwice()
     {
-        var asset = new Asset("Db-Server", "10.0.0.5", DummyCpe);
+        var asset = new Asset("Db-Server", "10.0.0.5", DummyCpe, "test-owner-id");
         var vuln1 = MakeVuln("CVE-2024-1234", 9.8m, "CRITICAL");
         var vuln2 = MakeVuln("CVE-2024-1234", 7.5m, "HIGH");
 
@@ -62,7 +62,7 @@ public class AssetTests
     [Fact]
     public void CalculateTotalRiskScore_MultipleVulnerabilities_ReturnsSum()
     {
-        var asset = new Asset("Firewall", "192.168.1.1", DummyCpe);
+        var asset = new Asset("Firewall", "192.168.1.1", DummyCpe, "test-owner-id");
         asset.AddVulnerability(MakeVuln("CVE-1", 3.5m));
         asset.AddVulnerability(MakeVuln("CVE-2", 5.0m, "MEDIUM"));
 
@@ -74,7 +74,7 @@ public class AssetTests
     [Fact]
     public void ReplaceVulnerabilities_OverwritesExistingSet()
     {
-        var asset = new Asset("Cache", "10.0.0.7", DummyCpe);
+        var asset = new Asset("Cache", "10.0.0.7", DummyCpe, "test-owner-id");
         asset.AddVulnerability(MakeVuln("CVE-OLD-1", 4.0m));
         asset.AddVulnerability(MakeVuln("CVE-OLD-2", 6.0m));
 

@@ -12,7 +12,7 @@ public sealed class Asset
     private readonly List<Vulnerability> _vulnerabilities = [];
     public IReadOnlyCollection<Vulnerability> Vulnerabilities => _vulnerabilities.AsReadOnly();
 
-    public Asset(string hostname, string ipAddress, string cpe)
+    public Asset(string hostname, string ipAddress, string cpe, string ownerId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(hostname);
         ArgumentException.ThrowIfNullOrWhiteSpace(ipAddress);
@@ -21,6 +21,7 @@ public sealed class Asset
         Hostname = hostname;
         IpAddress = ipAddress;
         Cpe = cpe;
+        OwnerId = ownerId;
     }
 
     public void UpdateDetails(string hostname, string ipAddress, string cpe)

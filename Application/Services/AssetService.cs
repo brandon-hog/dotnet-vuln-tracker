@@ -4,12 +4,12 @@ using Shared.Dtos;
 
 namespace Application.Services;
 
-public class AssetService(IAssetRepository repository) : IAssetService
+public class AssetService(IAssetRepository repository, ICurrentUser currentUser) : IAssetService
 {
     public async Task<Guid> Create(CreateAsset request, CancellationToken cancellationToken)
     {
         // Instantiate the Domain entity (enforcing validation rules)
-        var asset = new Asset(request.Hostname, request.IpAddress, request.Cpe);
+        var asset = new Asset(request.Hostname, request.IpAddress, request.Cpe, currentUser.Id!);
         
         // Persist via Infrastructure
         await repository.AddAsync(asset, cancellationToken);
