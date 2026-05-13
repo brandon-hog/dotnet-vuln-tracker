@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Application.Services;
 using Polly;
 using Polly.Extensions.Http;
+using Api.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,10 +29,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Tells MediatR to scan the Application assembly to find all the Handlers
-builder.Services.AddMediatR(cfg => 
-    cfg.RegisterServicesFromAssembly(typeof(IAssetRepository).Assembly));
-
 // Register EF Core DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -50,8 +47,17 @@ builder.Services.AddHttpClient<NvdService>(client =>
         retryCount: 5,
         sleepDurationProvider: attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt))));
 
+// Register the HttpAccessor
+builder.Services.AddHttpContextAccessor();
+
+// Register the CurrentUser service
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+
 // Register the NVD service
 builder.Services.AddScoped<INvdService, NvdService>();
+
+// Register Asset Service
+builder.Services.AddScoped<IAssetService, AssetService>();
 
 // Register the background worker to sync the db
 builder.Services.AddHostedService<Api.Workers.CveSyncWorker>();
