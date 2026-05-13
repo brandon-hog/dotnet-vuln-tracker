@@ -19,7 +19,6 @@ public class AssetsController(IAssetService assetService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateAsset([FromBody] CreateAsset command, CancellationToken cancellationToken)
     {
-        // MediatR finds the exact handler for this command and executes it
         var assetId = await assetService.Create(command, cancellationToken);
         
         // Returns HTTP 201 Created with the new ID

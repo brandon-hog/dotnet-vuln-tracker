@@ -8,8 +8,8 @@ DotnetVulnTracker helps teams track network assets and correlate them with vulne
 
 - Practicing fullstack ownership in the .NET framework: Blazor WebAssembly frontend + ASP.NET Core API + PostgreSQL.
 - Practicing Clean Architecture boundaries with Domain/Application/Infrastructure separation.
-- Learning and implementing real-world backend patterns: MediatR CQRS handlers, EF Core repositories, hosted background worker, and Identity-based auth.
-- Learning Unitx tests to include tests for domain behavior and invariants.
+- Learning and implementing real-world backend patterns: application services, EF Core repositories, hosted background worker, and Identity-based auth.
+- Using xUnit for tests covering domain behavior and invariants.
 
 ## Tech Stack
 
@@ -18,7 +18,6 @@ DotnetVulnTracker helps teams track network assets and correlate them with vulne
 - Blazor WebAssembly
 - Entity Framework Core + Npgsql (PostgreSQL)
 - ASP.NET Core Identity (Minimal API endpoints)
-- MediatR
 - xUnit
 - Docker (for local PostgreSQL)
 
@@ -26,7 +25,7 @@ DotnetVulnTracker helps teams track network assets and correlate them with vulne
 
 - `Client`: Blazor WebAssembly frontend (UI, auth state, token handler).
 - `Api`: HTTP API, DI composition root, Identity endpoints, background CVE sync worker.
-- `Application`: Use cases (commands/queries), interfaces/abstractions.
+- `Application`: Use cases (DTOs and services), interfaces/abstractions.
 - `Domain`: Core entities and business rules.
 - `Infrastructure`: EF Core DbContext, migrations, repository implementations.
 - `Shared`: DTOs shared between client and API.
@@ -133,8 +132,8 @@ This solution uses Clean Architecture to keep business logic independent of fram
   - Holds enterprise business rules and invariants.
   - `Asset` and `Vulnerability` enforce valid state and behavior (e.g., CVSS bounds, duplicate CVE prevention, risk scoring).
 - **Application (`Application`)**
-  - Defines use cases (commands/queries) and interfaces (`IAssetRepository`).
-  - Orchestrates actions through MediatR handlers without depending on concrete data access.
+  - Defines use cases (request DTOs, services) and interfaces (`IAssetRepository`, `IAssetService`).
+  - Orchestrates actions through application services without depending on concrete data access.
 - **Infrastructure (`Infrastructure`)**
   - Implements application abstractions (repository + EF Core persistence).
   - Contains `AppDbContext`, migrations, and query/paging implementation details.
@@ -153,7 +152,7 @@ Dependencies point inward:
 
 ### Request Flow Example
 
-`Client` page action -> `Api` controller endpoint -> MediatR command/query handler in `Application` -> `IAssetRepository` abstraction -> `Infrastructure` repository implementation -> PostgreSQL via EF Core -> response mapped to DTO -> returned to `Client`.
+`Client` page action -> `Api` controller endpoint -> `IAssetService` in `Application` -> `IAssetRepository` abstraction -> `Infrastructure` repository implementation -> PostgreSQL via EF Core -> response mapped to DTO -> returned to `Client`.
 
 This keeps business rules testable and resilient to framework changes.
 
